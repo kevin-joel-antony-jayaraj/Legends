@@ -210,15 +210,20 @@ public final class GameState implements BoardView {
     // ----- Bombs (hidden) and the Keystone -------------------------------------------
 
     /**
-     * Hides a bomb. More than one bomb may share a square.
+     * Hides a bomb. Only one bomb fits on a square.
      *
-     * @throws IllegalArgumentException if the square is off the board or not walkable
+     * @throws IllegalArgumentException if the square is off the board, not walkable, or already has a bomb
      */
     public void placeBomb(Position at, int ownerSeat) {
-        if (!board.contains(at) || !board.tileAt(at).isWalkable()) {
+        if (!board.contains(at) || !board.tileAt(at).isWalkable() || hasBomb(at)) {
             throw new IllegalArgumentException("Can't place a bomb on " + at);
         }
         bombs.add(new Bomb(at, ownerSeat));
+    }
+
+    @Override
+    public boolean hasBomb(Position p) {
+        return bombs.stream().anyMatch(bomb -> bomb.at().equals(p));
     }
 
     /**

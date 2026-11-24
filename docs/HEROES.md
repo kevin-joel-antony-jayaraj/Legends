@@ -7,7 +7,7 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
 - **Move:** 1 square in any direction (like a king).
 - **Normal attack, "Diagonal shot":** fires along a diagonal, up to 4 squares. Hits the first unit in its path. Damage: 2 hearts.
 - **Normal attack, "Melee":** 1 square, horizontal or vertical only. Damage: 2 hearts.
-- **Super, "Push Back":** pushes a target up to 3 squares directly away from the Archer. Stops early at a wall, a unit, or the river's edge. Damage: 1 heart.
+- **Super, "Push Back":** a shockwave. Every enemy within 3 squares (a solid 7×7 square around the Archer) takes 1 heart and is pushed straight away from the Archer until it's out of the square. A push stops early at a wall, a unit, or the river's edge.
   - **Charge:** full after the Archer deals damage in 5 hits.
 
 ## Knight (tank)
@@ -22,7 +22,9 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
   - Places a bomb on any empty square on the board.
   - Once placed, the bomb is hidden from everyone, including the Knight. Players must remember where it is.
   - Explodes when an enemy steps on it, for 3 hearts to that enemy.
-  - Chain reaction: when a bomb explodes, every bomb within 2 squares of it also explodes, and each chained bomb deals 3 hearts to anyone in its blast.
+  - Each blast covers the 3×3 square around its bomb: 3 hearts to every enemy in it.
+  - Chain reaction: any other bomb inside that 3×3 square also explodes, with its own 3×3 blast. Bombs outside it don't.
+  - Only one bomb per square. The Knight can tell where its bombs are; keeping that secret is the Knight player's job.
   - The Knight takes no damage from its own bombs.
   - **Charge:** full after the Knight takes 6 hearts of damage. The meter charges from damage taken, but the bomb itself is still just a placement. Charging doesn't change what the bomb does.
 
@@ -90,11 +92,11 @@ Choices made while coding v0.2 (`src/main/java/com/legends/hero/`) where this do
 - **Players:** the real game is 4 players, but setup also accepts 2 or 3, which is handy for testing.
 - **Console letters:** A = Archer, K = Knight, C = Castle, W = Pawn (`P` is already the spawn-area tile).
 - **Supers:** a Super costs one action, is only offered when charged, and empties the meter. Its own hits don't refill the meter.
-- **Archer's Push Back:** aims like a ranged shot (any of the 8 directions, first piece within 4 squares, blocked by forest and walls). Pushes up to 3 squares straight away from the Archer.
+- **Archer's Push Back:** an area effect, so it reaches pieces in forests and behind walls. "Straight away" means stepping in the direction from the Archer to the piece (diagonally if it isn't in line). The farthest pieces are pushed first, so they make room for the ones behind them.
 - **Castle's Pull:** a wall between the Castle and a piece blocks the pull on that line. Forest doesn't. Rivers stop the pulled piece at the edge.
-- **Bombs:** each bomb's blast hits every enemy within 1 square (a 3×3 area) for 3 hearts. A blast sets off every other bomb within 2 squares, and each of those blasts too. Bombs go off whenever an enemy arrives on the square, including by being pushed or knocked back. Two bombs can share a square: refusing a square would reveal that a bomb is there.
+- **Bombs:** go off whenever an enemy arrives on the square, including by being pushed, knocked back or teleported.
 - **Knife throw:** stays available until it's used, as an Assassin or an Engineer, because it's the only way to drop the Keystone. It's a ranged attack.
 - **Poison:** ticks at the start of the victim's own turn, and can defeat them.
-- **Keystone teleport:** lands on a random free square, never on a hidden bomb.
+- **Keystone teleport:** lands on a random free square, and can land on a hidden bomb.
 - **Multi-target attacks:** each piece hit counts as one hit for Super charging.
 - **Ricochet range:** "within 2 squares" counts diagonals as 1 square, so it covers a 5×5 area around the target.

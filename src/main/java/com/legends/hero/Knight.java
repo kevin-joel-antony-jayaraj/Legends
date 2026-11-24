@@ -28,10 +28,12 @@ public final class Knight extends Hero {
     private static final Attack CHECK = new KnightCheck("check",
             new int[] {CHECK_EARLY_DAMAGE, CHECK_MIDDLE_DAMAGE, CHECK_END_DAMAGE}, CHECK_SPLASH_DAMAGE);
 
-    /** Bomb rules: damage per blast, blast size around the bomb, and how far a blast sets off other bombs. */
+    /**
+     * Bomb rules: each blast covers the 3×3 square around the bomb. It damages every enemy
+     * in that square and sets off any other bomb in it, which then blasts its own 3×3.
+     */
     public static final int BOMB_DAMAGE = Hearts.of(3);
     public static final int BOMB_BLAST_RADIUS = 1;
-    public static final int BOMB_CHAIN_RADIUS = 2;
 
     /** Super: hide a bomb on any empty square. */
     private static final Attack BOMB = new BombDrop("bomb");

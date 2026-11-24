@@ -220,23 +220,42 @@ class AttackTest {
 
     // ----- Supers and the Knife throw -----------------------------------------------
 
+    private static final PushBack SHOCKWAVE = new PushBack("push", 3, 2);
+
     @Test
-    void pushBackHitsAndPushesUpToThreeSquaresAway() {
-        TestView view = new TestView(12).occupy(5, 7);
-        AttackOption option = new PushBack("push", 4, 3, 2).options(at(5, 5), view).get(0);
-        assertEquals(Map.of(at(5, 7), 2), damageByTarget(option));
-        assertEquals(pushTo(at(5, 7), at(5, 10)), option.effects());
+    void pushBackHitsEveryoneInTheSquareAndPushesThemOut() {
+        // Archer at (5,5): one piece in line to the east, one off-line to the north-west.
+        TestView view = new TestView(12).occupy(5, 6).occupy(3, 4);
+        AttackOption option = SHOCKWAVE.options(at(5, 5), view).get(0);
+        assertEquals(Map.of(at(5, 6), 2, at(3, 4), 2), damageByTarget(option));
+        assertTrue(option.effects().contains(new Effect.Push(at(5, 6), at(5, 9))), "out of the 7x7, just past its edge");
+        assertTrue(option.effects().contains(new Effect.Push(at(3, 4), at(1, 2))), "diagonally away");
     }
 
     @Test
-    void pushBackStopsAtTheRiverEdgeAndAtOtherPieces() {
-        TestView river = new TestView(12).occupy(5, 7).tile(5, 9, TileType.RIVER);
-        assertEquals(pushTo(at(5, 7), at(5, 8)), new PushBack("push", 4, 3, 2).options(at(5, 5), river).get(0).effects());
+    void pushBackIgnoresPiecesOutsideTheSquare() {
+        TestView view = new TestView(12).occupy(5, 9);
+        assertTrue(SHOCKWAVE.options(at(5, 5), view).isEmpty());
+    }
 
-        TestView blocked = new TestView(12).occupy(5, 7).occupy(5, 8);
-        assertTrue(new PushBack("push", 4, 3, 2).options(at(5, 5), blocked).stream()
-                .filter(o -> o.aim().equals(at(5, 7))).findFirst().orElseThrow()
-                .effects().isEmpty(), "can't move, but still takes the hit");
+    @Test
+    void pushBackStopsAtTheRiverEdge() {
+        TestView view = new TestView(12).occupy(5, 6).tile(5, 8, TileType.RIVER);
+        assertEquals(List.of(new Effect.Push(at(5, 6), at(5, 7))), SHOCKWAVE.options(at(5, 5), view).get(0).effects());
+    }
+
+    @Test
+    void pushBackMovesTheFarPieceFirstSoTheNearOneFollows() {
+        // Two pieces in a row to the east: the far one moves out, making room for the near one.
+        TestView view = new TestView(12).occupy(5, 6).occupy(5, 7);
+        List<Effect> pushes = SHOCKWAVE.options(at(5, 5), view).get(0).effects();
+        assertEquals(List.of(new Effect.Push(at(5, 7), at(5, 9)), new Effect.Push(at(5, 6), at(5, 8))), pushes);
+    }
+
+    @Test
+    void pushBackReachesIntoForest() {
+        TestView view = new TestView(12).tile(5, 6, TileType.FOREST).occupy(5, 6);
+        assertEquals(1, SHOCKWAVE.options(at(5, 5), view).size());
     }
 
     @Test

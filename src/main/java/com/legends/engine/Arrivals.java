@@ -13,8 +13,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * What happens when a hero arrives on a square, however it got there: walking, jumping,
@@ -47,9 +45,8 @@ final class Arrivals {
     }
 
     /**
-     * Sets off bombs, and every bomb within the chain radius of each one that goes off.
-     * Each blast deals its damage to every hero within the blast radius, except the bomb's
-     * owner.
+     * Sets off bombs. Each blast covers the 3×3 square around its bomb: it damages every
+     * hero there except the bomb's owner, and sets off every other bomb there.
      */
     private static void detonate(ActionContext context, List<Bomb> first) {
         GameState game = context.game();
@@ -75,7 +72,7 @@ final class Arrivals {
             }
 
             for (Bomb other : game.hiddenBombs()) {
-                if (other.at().kingDistance(bomb.at()) <= Knight.BOMB_CHAIN_RADIUS) {
+                if (other.at().kingDistance(bomb.at()) <= Knight.BOMB_BLAST_RADIUS) {
                     toExplode.add(other);
                 }
             }
@@ -108,17 +105,15 @@ final class Arrivals {
 
     /**
      * Sends the new Queen to a random free square (docs/HEROES.md: anywhere except rivers
-     * and blocked tiles). Squares with hidden bombs are left out so the teleport can't set
-     * one off.
+     * and blocked tiles). It can land on a hidden bomb, which then goes off.
      */
     private static void teleport(ActionContext context, Hero hero) {
         GameState game = context.game();
-        Set<Position> bombSquares = game.hiddenBombs().stream().map(Bomb::at).collect(Collectors.toSet());
         List<Position> choices = new ArrayList<>();
         for (int row = 0; row < game.board().rows(); row++) {
             for (int col = 0; col < game.board().cols(); col++) {
                 Position square = new Position(row, col);
-                if (game.isFreeToEnter(square) && !bombSquares.contains(square)) {
+                if (game.isFreeToEnter(square)) {
                     choices.add(square);
                 }
             }
@@ -130,5 +125,6 @@ final class Arrivals {
         Position to = choices.get(context.random().nextInt(choices.size()));
         game.relocateHero(hero, to);
         context.report(new GameEvent.HeroMoved(hero.owner().seat(), from, to));
+        arrive(context, hero); // the Keystone is already gone, so this only checks for bombs
     }
 }

@@ -32,12 +32,11 @@ public final class Archer extends Hero {
     private static final Attack MELEE =
             LineShot.melee("melee", Direction.ORTHOGONALS, 1, distance -> MELEE_DAMAGE);
 
-    public static final int PUSH_RANGE = 4;
-    public static final int PUSH_SQUARES = 3;
+    public static final int PUSH_RADIUS = 3;
     public static final int PUSH_DAMAGE = Hearts.of(1);
 
-    /** Super: hit the first piece in any direction within 4 squares and push it 3 squares away. */
-    private static final Attack PUSH_BACK = new PushBack("push-back", PUSH_RANGE, PUSH_SQUARES, PUSH_DAMAGE);
+    /** Super: everyone within 3 squares (a 7×7 square) takes 1 heart and is pushed out of it. */
+    private static final Attack PUSH_BACK = new PushBack("push-back", PUSH_RADIUS, PUSH_DAMAGE);
 
     private static final MovementPattern MOVEMENT = new KingStep();
 

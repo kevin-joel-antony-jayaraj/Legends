@@ -85,10 +85,10 @@ class SuperAndEffectsTest {
         Hero archer = engine.game().heroInSeat(0);
         chargeSuper(archer);
 
-        List<GameEvent> events = engine.perform(new AttackAction(0, "push-back", at(5, 7)));
+        List<GameEvent> events = engine.perform(new AttackAction(0, "push-back", at(5, 5)));
 
         assertEquals(new GameEvent.SuperUsed(0, "push-back"), events.get(0));
-        assertEquals(Optional.of(at(5, 10)), where(engine, 1));
+        assertEquals(Optional.of(at(5, 9)), where(engine, 1), "pushed just outside the 7x7 square");
         assertEquals(Hearts.of(12 - 1), engine.game().heroInSeat(1).halfHearts());
         assertFalse(archer.isSuperReady(), "using the Super empties the meter, and its own hit doesn't refill it");
     }
@@ -132,18 +132,48 @@ class SuperAndEffectsTest {
     }
 
     @Test
-    void bombsChainWithinTwoSquaresAndEachBlastHitsItsNeighbours() {
-        // Bombs at (5,6) and (5,8). The Archer steps on (5,6); the Castle stands next to (5,8).
-        GameEngine engine = engine(List.of(at(5, 5), at(1, 10), at(4, 9), at(10, 1)), 0);
+    void bombsChainOnlyInsideTheBlastSquare() {
+        // Bombs at (5,6), (5,7) and (5,9). The Archer steps on (5,6), which sets off (5,7)
+        // next to it. (5,9) is 2 squares from (5,7), outside its 3x3, so it stays.
+        // The Castle at (4,8) is inside (5,7)'s blast.
+        GameEngine engine = engine(List.of(at(5, 5), at(1, 10), at(4, 8), at(10, 1)), 0);
         engine.game().placeBomb(at(5, 6), 1);
-        engine.game().placeBomb(at(5, 8), 1);
+        engine.game().placeBomb(at(5, 7), 1);
+        engine.game().placeBomb(at(5, 9), 1);
 
         List<GameEvent> events = engine.perform(new MoveAction(0, at(5, 6)));
 
         assertTrue(events.contains(new GameEvent.BombExploded(at(5, 6))));
-        assertTrue(events.contains(new GameEvent.BombExploded(at(5, 8))));
-        assertEquals(Hearts.of(8 - 3), engine.game().heroInSeat(0).halfHearts());
+        assertTrue(events.contains(new GameEvent.BombExploded(at(5, 7))));
+        assertFalse(events.contains(new GameEvent.BombExploded(at(5, 9))));
+        assertEquals(1, engine.game().hiddenBombs().size());
+        assertEquals(Hearts.of(8 - 3 - 3), engine.game().heroInSeat(0).halfHearts(), "caught in both blasts");
         assertEquals(Hearts.of(10 - 3), engine.game().heroInSeat(2).halfHearts());
+    }
+
+    @Test
+    void onlyOneBombFitsOnASquare() {
+        GameEngine engine = engine(List.of(at(1, 1), at(5, 5), at(10, 10), at(10, 1)), 1);
+        engine.game().placeBomb(at(6, 6), 1);
+        chargeSuper(engine.game().heroInSeat(1));
+        assertTrue(engine.game().attackOptions(engine.game().heroInSeat(1)).stream()
+                .noneMatch(o -> o.attackId().equals("bomb") && o.aim().equals(at(6, 6))));
+        assertTrue(engine.check(new AttackAction(1, "bomb", at(6, 6))).isPresent());
+    }
+
+    @Test
+    void teleportingQueenCanLandOnABomb() {
+        // A 3x3 board: once the Pawn claims the Keystone, every free square has a bomb,
+        // including (1,1), the square the Pawn just left.
+        GameEngine engine = engine(new Board(3, 3), List.of(at(0, 0), at(0, 2), at(2, 2), at(1, 1)), 3);
+        GameState game = engine.game();
+        game.dropKeystone(at(1, 0), 3);
+        for (Position p : List.of(at(0, 1), at(1, 1), at(1, 2), at(2, 0), at(2, 1))) {
+            game.placeBomb(p, 1);
+        }
+        List<GameEvent> events = engine.perform(new MoveAction(3, at(1, 0)));
+        assertTrue(events.contains(new GameEvent.KeystoneClaimed(3)));
+        assertTrue(events.stream().anyMatch(GameEvent.BombExploded.class::isInstance), "landed on a bomb");
     }
 
     @Test
