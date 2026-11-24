@@ -11,7 +11,14 @@ import java.util.List;
  *
  * @param landing where the attacker ends up
  * @param pushTo  where the first pushed piece ends up, or null if nothing is pushed
+ * @param hits    every square that takes damage, and how much
+ * @param pushes  every piece the attack moves (knockback, push or pull), for showing it
+ *                before it happens. Positions only: nothing here is secret.
  */
 public record AttackChoice(String attackId, boolean isSuper, Position aim, Position landing, Position pushTo,
-                           List<Hit> hits) {
+                           List<Hit> hits, List<PushView> pushes) {
+
+    /** A piece moved from one square to another by an attack. */
+    public record PushView(Position from, Position to) {
+    }
 }

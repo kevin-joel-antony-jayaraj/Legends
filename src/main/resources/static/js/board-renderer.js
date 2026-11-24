@@ -67,6 +67,7 @@ export class BoardRenderer {
 
     if (highlights.landing) this.#ghost(highlights.landing, SEAT_COLORS[view.yourSeat]);
     highlights.hits.forEach((hit) => this.#hit(hit));
+    highlights.pushes.forEach((push) => this.#arrow(push.from, push.to));
   }
 
   // ----- layout -------------------------------------------------------------------
@@ -288,6 +289,36 @@ export class BoardRenderer {
     ctx.arc(x, y - 3, TILE * 0.34, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
+  }
+
+  /** A push or pull: an arrow from where the piece is to where it will end up. */
+  #arrow(fromSquare, toSquare) {
+    const ctx = this.#ctx;
+    const from = this.#center(fromSquare);
+    const to = this.#center(toSquare);
+    const angle = Math.atan2(to.y - from.y, to.x - from.x);
+    const head = 11;
+
+    ctx.strokeStyle = '#8fe0ff';
+    ctx.fillStyle = '#8fe0ff';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x - Math.cos(angle) * head, to.y - Math.sin(angle) * head);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.beginPath();
+    ctx.moveTo(to.x, to.y);
+    ctx.lineTo(to.x - head * Math.cos(angle - 0.45), to.y - head * Math.sin(angle - 0.45));
+    ctx.lineTo(to.x - head * Math.cos(angle + 0.45), to.y - head * Math.sin(angle + 0.45));
+    ctx.closePath();
+    ctx.fill();
+
+    const { x, y } = this.#corner(toSquare);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x + 3, y + 3, TILE - 6, TILE - 6);
   }
 
   #hit({ at, label }) {

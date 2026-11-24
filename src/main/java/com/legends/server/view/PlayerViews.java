@@ -6,6 +6,7 @@ import com.legends.hero.Hero;
 import com.legends.hero.Pawn;
 import com.legends.hero.PoisonStatus;
 import com.legends.hero.attack.AttackOption;
+import com.legends.hero.attack.Effect;
 import com.legends.model.Position;
 import com.legends.model.TileType;
 import java.util.ArrayList;
@@ -79,6 +80,15 @@ public final class PlayerViews {
                 pawn == null ? null : pawn.hasKnife());
     }
 
+    /** Only pushes are copied. Other effects stay on the server; a placed bomb's square is secret. */
+    private static List<AttackChoice.PushView> pushes(AttackOption option) {
+        return option.effects().stream()
+                .filter(Effect.Push.class::isInstance)
+                .map(Effect.Push.class::cast)
+                .map(push -> new AttackChoice.PushView(push.from(), push.to()))
+                .toList();
+    }
+
     private static AttackChoice choice(GameState game, Hero hero, AttackOption option) {
         return new AttackChoice(
                 option.attackId(),
@@ -86,6 +96,7 @@ public final class PlayerViews {
                 option.aim(),
                 option.endsAt(),
                 option.firstPushDestination().orElse(null),
-                option.hits());
+                option.hits(),
+                pushes(option));
     }
 }

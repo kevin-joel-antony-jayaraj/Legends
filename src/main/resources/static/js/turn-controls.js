@@ -7,7 +7,9 @@
 //
 // Modes:
 //   move    click a highlighted square to walk there (the default)
-//   attack  an attack is picked; click one of its aim squares
+//   attack  an attack is picked; click one of its aim squares. Attacks with only one
+//           option (Push Back, Pull, Queen lines: they hit everything around the hero)
+//           also fire on a click on anything they affect, or on picking them again
 //   choose  that aim can be done more than one way (the Knight's Check can land or
 //           push differently), so click where to land, then where to push
 
@@ -82,7 +84,10 @@ export class TurnControls {
 
     if (mode.kind === 'attack') {
       const choices = this.#choicesAimedAt(mode.attackId, square);
-      if (choices.length === 0) return null;
+      if (choices.length === 0) {
+        const only = this.#onlyChoice(mode.attackId);
+        return only && affects(only, square) ? attackAction(only) : null;
+      }
       if (choices.length === 1) return attackAction(choices[0]);
       this.#mode = { kind: 'choose', attackId: mode.attackId, aim: square, choices };
       return null;
@@ -100,6 +105,19 @@ export class TurnControls {
     return null;
   }
 
+  /**
+   * Picking an attack that's already picked: fires it if there's nothing to choose
+   * (it has a single option), otherwise does nothing.
+   *
+   * @returns the action to send, or null
+   */
+  confirm() {
+    const mode = this.#mode;
+    if (!this.isMyTurn() || mode.kind !== 'attack') return null;
+    const only = this.#onlyChoice(mode.attackId);
+    return only ? attackAction(only) : null;
+  }
+
   /** One line telling the player what to do next. */
   hint() {
     if (!this.isMyTurn()) return '';
@@ -111,10 +129,9 @@ export class TurnControls {
     }
     const name = attackName(mode.attackId);
     if (mode.kind === 'attack') {
-      return unique(this.#choicesFor(mode.attackId).map((c) => c.aim)).length === 1
-        && same(this.#choicesFor(mode.attackId)[0].aim, this.#yourPosition())
-        ? `Click your hero to use ${name}.`
-        : `Click a highlighted square to aim ${name}.`;
+      return this.#onlyChoice(mode.attackId)
+        ? `${name}: click your hero, anyone it affects, or ${name} again to use it.`
+        : `Click an orange square to aim ${name}. Hover first to preview it.`;
     }
     return distinguishingField(mode.choices) === 'landing'
       ? `${name} can end in more than one place: click where to land.`
@@ -124,10 +141,10 @@ export class TurnControls {
   /**
    * What to draw for the current mode, given the square under the mouse.
    *
-   * @returns {moves, aims, picks, hits: [{at, label}], landing, selected}
+   * @returns {moves, aims, picks, hits: [{at, label}], pushes: [{from, to}], landing, selected}
    */
   highlights(hover) {
-    const none = { moves: [], aims: [], picks: [], hits: [], landing: null, selected: null };
+    const none = { moves: [], aims: [], picks: [], hits: [], pushes: [], landing: null, selected: null };
     if (!this.isMyTurn()) return none;
     const mode = this.#mode;
 
@@ -153,8 +170,15 @@ export class TurnControls {
     const landing = same(choice.landing, this.#yourPosition()) ? null : choice.landing;
     return {
       hits: choice.hits.map((hit) => ({ at: hit.target, label: `-${formatHearts(hit.halfHearts)}` })),
+      pushes: choice.pushes ?? [],
       landing,
     };
+  }
+
+  /** The attack's option if it has exactly one, else null. */
+  #onlyChoice(attackId) {
+    const choices = this.#choicesFor(attackId);
+    return choices.length === 1 ? choices[0] : null;
   }
 
   #choicesFor(attackId) {
@@ -173,6 +197,13 @@ export class TurnControls {
 /** The request that picks exactly this option; the server accepts it only if it's legal. */
 function attackAction(choice) {
   return { type: 'ATTACK', attackId: choice.attackId, aim: choice.aim, landing: choice.landing, pushTo: choice.pushTo };
+}
+
+/** True if the option aims at, damages, or moves anything on this square. */
+function affects(choice, square) {
+  return same(choice.aim, square)
+    || choice.hits.some((hit) => same(hit.target, square))
+    || (choice.pushes ?? []).some((push) => same(push.from, square) || same(push.to, square));
 }
 
 /** Which field tells these options apart: where the attacker lands, or else where the target is pushed. */

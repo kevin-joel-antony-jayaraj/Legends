@@ -100,3 +100,42 @@ test('attacks are listed once each, in order', () => {
     { attackId: 'push-back', isSuper: true },
   ]);
 });
+
+// ----- attacks with only one option (Push Back, Pull, Queen lines) ---------------------
+
+const pull = choice('pull', at(5, 5), { isSuper: true, pushTo: at(4, 5) });
+pull.pushes = [{ from: at(1, 5), to: at(4, 5) }];
+
+test('an area attack fires when you click a piece it moves, not only your own square', () => {
+  const controls = new TurnControls();
+  controls.update(view({ attacks: [pull] }));
+  controls.selectAttack('pull');
+  assert.deepEqual(controls.click(at(1, 5)), {
+    type: 'ATTACK', attackId: 'pull', aim: at(5, 5), landing: at(5, 5), pushTo: at(4, 5),
+  });
+});
+
+test('an area attack fires when you click a square it damages', () => {
+  const queen = choice('queen-lines', at(5, 5), { hits: [{ target: at(5, 9), halfHearts: 4 }] });
+  const controls = new TurnControls();
+  controls.update(view({ attacks: [queen] }));
+  controls.selectAttack('queen-lines');
+  assert.equal(controls.click(at(0, 0)), null, 'an unrelated square does nothing');
+  assert.equal(controls.click(at(5, 9)).attackId, 'queen-lines');
+});
+
+test('picking an area attack again fires it; an aimed attack has nothing to confirm', () => {
+  const controls = new TurnControls();
+  controls.update(view({ attacks: [pull, choice('lane-shot', at(5, 9)), choice('lane-shot', at(1, 5))] }));
+  controls.selectAttack('pull');
+  assert.equal(controls.confirm().attackId, 'pull');
+  controls.selectAttack('lane-shot');
+  assert.equal(controls.confirm(), null);
+});
+
+test('the preview shows where pushed and pulled pieces end up', () => {
+  const controls = new TurnControls();
+  controls.update(view({ attacks: [pull] }));
+  controls.selectAttack('pull');
+  assert.deepEqual(controls.highlights(null).pushes, [{ from: at(1, 5), to: at(4, 5) }]);
+});

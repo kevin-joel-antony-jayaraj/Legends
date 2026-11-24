@@ -49,6 +49,8 @@ Hidden bombs never appear in a view.
 ```
 For an attack, copy `attackId`, `aim`, `landing` and `pushTo` from one of the `yourAttacks` entries.
 
+Each `yourAttacks` entry also has `hits` (every square that takes damage, and how much) and `pushes` (every piece the attack moves, as `from` and `to`), so a client can preview it. Area attacks (Push Back, Pull, Queen lines) have a single entry aimed at the hero's own square.
+
 Response `200`: the `events` that happened, in order, and your updated `view`.
 ```json
 {"events": [{"type": "HeroMoved", "data": {"seat": 1, "from": {"row": 1, "col": 10}, "to": {"row": 0, "col": 8}}}],

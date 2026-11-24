@@ -36,7 +36,7 @@ const players = new PlayersPanel($('players'));
 const log = new EventLog($('log'));
 const actionBar = new ActionBar($('actions'), {
   onMove: () => { controls.selectMove(); render(); },
-  onAttack: (attackId) => { controls.selectAttack(attackId); render(); },
+  onAttack: (attackId) => pickAttack(attackId),
   onEndTurn: () => perform({ type: 'END_TURN' }),
 });
 
@@ -47,6 +47,15 @@ let latestRequest = 0; // so a slow, older response can't overwrite a newer one
 let gameOverClosed = false;
 
 // ----- loading and acting ----------------------------------------------------------
+
+/** Picks an attack; picking the same one again fires it when there's nothing to aim. */
+function pickAttack(attackId) {
+  const again = controls.mode.kind === 'attack' && controls.mode.attackId === attackId;
+  const action = again ? controls.confirm() : null;
+  if (action) return void perform(action);
+  controls.selectAttack(attackId);
+  render();
+}
 
 async function refresh() {
   const request = ++latestRequest;
@@ -155,7 +164,7 @@ document.addEventListener('keydown', (event) => {
   else if (event.key === 'Enter' && controls.isMyTurn()) return void perform({ type: 'END_TURN' });
   else if (/^[1-9]$/.test(event.key)) {
     const attack = controls.attacks()[Number(event.key) - 1];
-    if (attack) controls.selectAttack(attack.attackId);
+    if (attack) return void pickAttack(attack.attackId);
   } else return;
   render();
 });
