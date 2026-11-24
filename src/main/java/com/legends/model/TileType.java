@@ -10,29 +10,31 @@ package com.legends.model;
 public enum TileType {
 
     /** Plain ground. Walkable, does not block arrows. */
-    GRASS(true, false),
+    GRASS(true, false, false),
 
     /** Starting area inside a corner. Behaves like grass. */
-    SPAWN(true, false),
+    SPAWN(true, false, false),
 
-    /** Impassable water. Arrows and shots fly over it. */
-    RIVER(false, false),
+    /** Impassable water. Arrows, shots and melee reach go over it. */
+    RIVER(false, false, false),
 
     /** The only walkable crossing over a river. */
-    BRIDGE(true, false),
+    BRIDGE(true, false, false),
 
-    /** Heroes can walk in, but ranged shots can't pass through or out of it. */
-    FOREST(true, true),
+    /** Heroes can walk in, but ranged shots can't pass through or out of it. Melee still works. */
+    FOREST(true, true, false),
 
-    /** Blocks movement and arrows. Permanent for version 1. */
-    WALL(false, true);
+    /** Blocks movement, arrows and melee. Permanent for version 1. */
+    WALL(false, true, true);
 
     private final boolean walkable;
     private final boolean blocksArrows;
+    private final boolean blocksMelee;
 
-    TileType(boolean walkable, boolean blocksArrows) {
+    TileType(boolean walkable, boolean blocksArrows, boolean blocksMelee) {
         this.walkable = walkable;
         this.blocksArrows = blocksArrows;
+        this.blocksMelee = blocksMelee;
     }
 
     /** Whether a piece can stand on this tile. */
@@ -43,5 +45,10 @@ public enum TileType {
     /** Whether a ranged shot is stopped by this tile. */
     public boolean blocksArrows() {
         return blocksArrows;
+    }
+
+    /** Whether a melee attack with reach (like the Pawn's Knife) is stopped by this tile. */
+    public boolean blocksMelee() {
+        return blocksMelee;
     }
 }

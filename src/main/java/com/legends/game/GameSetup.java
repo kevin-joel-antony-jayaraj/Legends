@@ -1,5 +1,6 @@
 package com.legends.game;
 
+import com.legends.board.Board;
 import com.legends.board.BoardGenerator;
 import com.legends.board.Corner;
 import com.legends.board.GeneratedBoard;
@@ -43,22 +44,42 @@ public final class GameSetup {
      *                fewer is handy for testing)
      */
     public GameState newGame(long seed, List<PlayerChoice> players) {
+        requirePlayerCount(players);
+        GeneratedBoard generated = boardGenerator.generate(seed);
+
+        List<Position> starts = new ArrayList<>();
+        for (int seat = 0; seat < players.size(); seat++) {
+            starts.add(generated.starts().get(CLOCKWISE.get(seat)));
+        }
+        int firstSeat = Seeds.random(seed, SETUP_SALT).nextInt(players.size());
+        return new GameState(generated.board(), seed, createHeroes(players), starts, firstSeat);
+    }
+
+    /**
+     * Starts a game on a board you built yourself, with heroes exactly where you say.
+     * For tests, tutorials and puzzle setups. Normal games should use {@link #newGame}.
+     *
+     * @param starts    start square for each player, same order as {@code players}
+     * @param firstSeat which player goes first
+     */
+    public GameState newGameOnBoard(Board board, List<PlayerChoice> players, List<Position> starts, int firstSeat) {
+        requirePlayerCount(players);
+        return new GameState(board, 0L, createHeroes(players), starts, firstSeat);
+    }
+
+    private static List<Hero> createHeroes(List<PlayerChoice> players) {
+        List<Hero> seats = new ArrayList<>();
+        for (int seat = 0; seat < players.size(); seat++) {
+            PlayerChoice choice = players.get(seat);
+            seats.add(choice.hero().create(new Player(seat, choice.name())));
+        }
+        return seats;
+    }
+
+    private static void requirePlayerCount(List<PlayerChoice> players) {
         if (players.size() < MIN_PLAYERS || players.size() > MAX_PLAYERS) {
             throw new IllegalArgumentException(
                     "Need " + MIN_PLAYERS + " to " + MAX_PLAYERS + " players, got " + players.size());
         }
-
-        GeneratedBoard generated = boardGenerator.generate(seed);
-
-        List<Hero> seats = new ArrayList<>();
-        List<Position> starts = new ArrayList<>();
-        for (int seat = 0; seat < players.size(); seat++) {
-            PlayerChoice choice = players.get(seat);
-            seats.add(choice.hero().create(new Player(seat, choice.name())));
-            starts.add(generated.starts().get(CLOCKWISE.get(seat)));
-        }
-
-        int firstSeat = Seeds.random(seed, SETUP_SALT).nextInt(players.size());
-        return new GameState(generated.board(), seed, seats, starts, firstSeat);
     }
 }
