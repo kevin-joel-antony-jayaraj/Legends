@@ -49,6 +49,19 @@ class BoardValidatorTest {
     }
 
     @Test
+    void startWhereAKnightCannotJumpIsInvalid() {
+        Board board = new Board(12, 12);
+        // Every L-jump from (1,1) that stays on the board lands in water,
+        // but the start's orthogonal neighbours are still walkable.
+        for (Position landing : List.of(new Position(3, 0), new Position(3, 2), new Position(0, 3), new Position(2, 3))) {
+            board.setTile(landing, TileType.RIVER);
+        }
+        ValidationResult result = BoardValidator.validate(board, STARTS);
+        assertFalse(result.isValid());
+        assertTrue(result.problems().stream().anyMatch(p -> p.contains("Knight")), result.problems().toString());
+    }
+
+    @Test
     void duplicateStartsAreInvalid() {
         List<Position> starts = List.of(new Position(1, 1), new Position(1, 1));
         assertFalse(BoardValidator.validate(new Board(12, 12), starts).isValid());
