@@ -12,7 +12,7 @@ import java.util.function.IntUnaryOperator;
  *
  * <p>One class covers several heroes' attacks, configured differently:
  * <ul>
- *   <li>Archer's diagonal shot: ranged, diagonals, 4 squares, 2 hearts.</li>
+ *   <li>Archer's diagonal shot: ranged, diagonals, unlimited range, 2 hearts.</li>
  *   <li>Archer's melee: orthogonals, 1 square, 2 hearts.</li>
  *   <li>Castle's lane shot: ranged, orthogonals, unlimited, damage falls off with distance.</li>
  *   <li>Pawn's Knife: all directions, 2 squares, damage falls off with distance.</li>

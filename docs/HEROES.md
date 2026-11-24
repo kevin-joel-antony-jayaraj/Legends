@@ -5,7 +5,7 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
 ## Archer
 - **Hearts:** 8
 - **Move:** 1 square in any direction (like a king).
-- **Normal attack, "Diagonal shot":** fires along a diagonal, up to 4 squares. Hits the first unit in its path. Damage: 2 hearts.
+- **Normal attack, "Diagonal shot":** fires along a diagonal with unlimited range. Hits the first unit in its path. Blocked by forest and walls, not the river. Damage: 2 hearts.
 - **Normal attack, "Melee":** 1 square, horizontal or vertical only. Damage: 2 hearts.
 - **Super, "Push Back":** a shockwave. Every enemy within 2 squares (a solid 5×5 square around the Archer) takes 1 heart and is pushed straight away from the Archer until it's out of the square. A push stops early at a wall, a unit, or the river's edge.
   - **Charge:** full after the Archer deals damage in 5 hits.

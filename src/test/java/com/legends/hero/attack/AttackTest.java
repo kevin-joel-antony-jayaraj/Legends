@@ -15,7 +15,8 @@ import org.junit.jupiter.api.Test;
 
 class AttackTest {
 
-    private static final Attack DIAGONAL_SHOT = LineShot.ranged("shot", Direction.DIAGONALS, 4, d -> 4);
+    /** A range-capped shot, to test the cap itself (the Archer's real shot has no cap). */
+    private static final Attack RANGE_4_DIAGONAL_SHOT = LineShot.ranged("shot", Direction.DIAGONALS, 4, d -> 4);
     private static final Attack KNIFE = LineShot.melee("knife", Direction.ALL, 2, d -> d == 1 ? 4 : 2);
 
     /** Damage per target square, for easy comparison. */
@@ -32,15 +33,15 @@ class AttackTest {
     @Test
     void rangedShotHitsOnlyTheFirstPieceInLine() {
         TestView view = new TestView(12).occupy(3, 3).occupy(2, 2);
-        List<AttackOption> options = DIAGONAL_SHOT.options(at(5, 5), view);
+        List<AttackOption> options = RANGE_4_DIAGONAL_SHOT.options(at(5, 5), view);
         assertEquals(List.of(at(3, 3)), aims(options), "the piece at (2,2) is behind (3,3)");
     }
 
     @Test
     void rangedShotStopsAtItsRange() {
         TestView view = new TestView(12).occupy(0, 0);
-        assertTrue(DIAGONAL_SHOT.options(at(5, 5), view).isEmpty(), "5 squares is out of range");
-        assertEquals(1, DIAGONAL_SHOT.options(at(4, 4), view).size(), "4 squares is in range");
+        assertTrue(RANGE_4_DIAGONAL_SHOT.options(at(5, 5), view).isEmpty(), "5 squares is out of range");
+        assertEquals(1, RANGE_4_DIAGONAL_SHOT.options(at(4, 4), view).size(), "4 squares is in range");
     }
 
     @Test
@@ -49,25 +50,25 @@ class AttackTest {
                 .tile(4, 4, TileType.RIVER).occupy(3, 3)     // NW: over the river
                 .tile(4, 6, TileType.FOREST).occupy(3, 7)    // NE: blocked by forest
                 .tile(6, 6, TileType.WALL).occupy(7, 7);     // SE: blocked by wall
-        assertEquals(List.of(at(3, 3)), aims(DIAGONAL_SHOT.options(at(5, 5), view)));
+        assertEquals(List.of(at(3, 3)), aims(RANGE_4_DIAGONAL_SHOT.options(at(5, 5), view)));
     }
 
     @Test
     void rangedShotCantHitAPieceInsideAForest() {
         TestView view = new TestView(12).tile(4, 4, TileType.FOREST).occupy(4, 4);
-        assertTrue(DIAGONAL_SHOT.options(at(5, 5), view).isEmpty());
+        assertTrue(RANGE_4_DIAGONAL_SHOT.options(at(5, 5), view).isEmpty());
     }
 
     @Test
     void rangedShotCantBeFiredFromInsideAForest() {
         TestView view = new TestView(12).tile(5, 5, TileType.FOREST).occupy(4, 4);
-        assertTrue(DIAGONAL_SHOT.options(at(5, 5), view).isEmpty());
+        assertTrue(RANGE_4_DIAGONAL_SHOT.options(at(5, 5), view).isEmpty());
     }
 
     @Test
     void lineShotDoesNotMoveTheAttacker() {
         TestView view = new TestView(12).occupy(4, 4);
-        assertEquals(at(5, 5), DIAGONAL_SHOT.options(at(5, 5), view).get(0).endsAt());
+        assertEquals(at(5, 5), RANGE_4_DIAGONAL_SHOT.options(at(5, 5), view).get(0).endsAt());
     }
 
     @Test
