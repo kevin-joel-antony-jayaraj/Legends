@@ -20,11 +20,11 @@ public final class Archer extends Hero {
     public static final int ACTIONS_PER_TURN = 3;
     public static final int HITS_TO_CHARGE_SUPER = 5;
 
-    public static final int SHOT_RANGE = 4;
+    public static final int SHOT_RANGE = LineShot.UNLIMITED;
     public static final int SHOT_DAMAGE = Hearts.of(2);
     public static final int MELEE_DAMAGE = Hearts.of(2);
 
-    /** Ranged, along the diagonals, up to 4 squares. */
+    /** Ranged, along the diagonals, any distance: hits the first unit in line. */
     private static final Attack DIAGONAL_SHOT =
             LineShot.ranged("diagonal-shot", Direction.DIAGONALS, SHOT_RANGE, distance -> SHOT_DAMAGE);
 

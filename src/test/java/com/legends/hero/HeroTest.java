@@ -1,14 +1,19 @@
 package com.legends.hero;
 
+import static com.legends.testsupport.TestView.at;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.legends.hero.attack.Attack;
+import com.legends.hero.attack.AttackOption;
 import com.legends.hero.movement.KingStep;
 import com.legends.hero.movement.KnightJump;
 import com.legends.hero.movement.OrthogonalSlide;
+import com.legends.testsupport.TestView;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class HeroTest {
@@ -114,6 +119,15 @@ class HeroTest {
         assertEquals(Hearts.of(12), pawn.maxHalfHearts());
 
         assertThrows(IllegalStateException.class, pawn::evolve);
+    }
+
+    @Test
+    void archerShootsAcrossTheWholeBoard() {
+        // Archer in one corner, a target in the opposite corner, nothing in between.
+        TestView view = new TestView(12).occupy(0, 0).occupy(11, 11);
+        Attack shot = new Archer(OWNER).attacks().stream()
+                .filter(attack -> attack.id().equals("diagonal-shot")).findFirst().orElseThrow();
+        assertEquals(List.of(at(0, 0)), shot.options(at(11, 11), view).stream().map(AttackOption::aim).toList());
     }
 
     @Test
