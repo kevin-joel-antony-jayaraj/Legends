@@ -4,6 +4,7 @@ import com.legends.hero.attack.Attack;
 import com.legends.hero.meter.SuperMeter;
 import com.legends.hero.movement.MovementPattern;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * A hero on the board. Abstract: you always create a specific hero (Archer, Knight...).
@@ -20,6 +21,7 @@ public abstract class Hero {
     private final Player owner;
     private final Health health;
     private final SuperMeter superMeter;
+    private PoisonStatus poison;
 
     protected Hero(Player owner, int maxHalfHearts, SuperMeter superMeter) {
         if (owner == null || superMeter == null) {
@@ -39,8 +41,11 @@ public abstract class Hero {
     /** The rule for where this hero can move. */
     public abstract MovementPattern movement();
 
-    /** The hero's Normal attacks available right now. Supers come in a later version. */
+    /** The hero's Normal attacks (and abilities like the Knife throw) available right now. */
     public abstract List<Attack> attacks();
+
+    /** The hero's Super, or empty if it has none. Usable only when {@link #isSuperReady()}. */
+    public abstract Optional<Attack> superAttack();
 
     public Player owner() {
         return owner;
@@ -117,6 +122,38 @@ public abstract class Hero {
             throw new IllegalStateException(this + " tried to use its Super before it was charged");
         }
         superMeter.reset();
+    }
+
+    // ----- Poison -------------------------------------------------------------------
+
+    public Optional<PoisonStatus> poison() {
+        return Optional.ofNullable(poison);
+    }
+
+    /**
+     * Poisons the hero. Poison doesn't stack: if already poisoned, the hero keeps
+     * whichever poison has more turns left.
+     */
+    public void applyPoison(PoisonStatus newPoison) {
+        if (!isAlive()) {
+            return;
+        }
+        if (poison == null || newPoison.turnsLeft() > poison.turnsLeft()) {
+            poison = newPoison;
+        }
+    }
+
+    /**
+     * Uses up one turn of poison. The caller deals the damage, so it can report who did it.
+     *
+     * @return the poison that ticked this turn, or empty if the hero isn't poisoned
+     */
+    public Optional<PoisonStatus> tickPoison() {
+        PoisonStatus ticking = poison;
+        if (ticking != null) {
+            poison = ticking.afterOneTurn();
+        }
+        return Optional.ofNullable(ticking);
     }
 
     /** For heroes that grow stronger (the Pawn). */

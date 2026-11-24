@@ -2,11 +2,13 @@ package com.legends.hero;
 
 import com.legends.hero.attack.Attack;
 import com.legends.hero.attack.LineShot;
+import com.legends.hero.attack.PullLines;
 import com.legends.hero.meter.HitCountMeter;
 import com.legends.hero.movement.MovementPattern;
 import com.legends.hero.movement.OrthogonalSlide;
 import com.legends.model.Direction;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Lane controller. Slides like a rook, shoots in straight lines with unlimited range,
@@ -26,6 +28,9 @@ public final class Castle extends Hero {
     /** Ranged, straight lines, unlimited range: 2 hearts within 2 squares, half a heart beyond. */
     private static final Attack LANE_SHOT = LineShot.ranged("lane-shot", Direction.ORTHOGONALS, LineShot.UNLIMITED,
             distance -> distance <= CLOSE_RANGE ? CLOSE_DAMAGE : FAR_DAMAGE);
+
+    /** Super: pull the first piece on each straight line in next to the Castle. */
+    private static final Attack PULL = new PullLines("pull");
 
     private static final MovementPattern MOVEMENT = new OrthogonalSlide(MAX_SLIDE);
 
@@ -51,5 +56,10 @@ public final class Castle extends Hero {
     @Override
     public List<Attack> attacks() {
         return List.of(LANE_SHOT);
+    }
+
+    @Override
+    public Optional<Attack> superAttack() {
+        return Optional.of(PULL);
     }
 }

@@ -9,21 +9,28 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The Knight's "Check": a jump along the L that hits whoever it lands on.
+ * The Knight's "Check": a jump along the L that lands on an enemy and knocks it back.
  *
  * <p>An L has three stop points: early (1 square out), middle (the bend), and the end.
- * The Knight picks an enemy on one of those stop points. The enemy takes damage by stop
- * point (early 1, middle 2, end 3 hearts), and the Knight lands on the square just
- * before it along the L (or stays put for an early stop). Hitting the end of the L also
- * splashes every other piece next to the target for 3 hearts.
+ * The Knight picks an enemy on one of them. The enemy takes damage by stop point
+ * (early 1, middle 2, end 3 hearts) and is knocked back one square in the direction the
+ * Knight is facing, which is the direction of its last step into that square. The Knight
+ * takes the enemy's square. Hitting the end of the L also splashes every other piece next
+ * to the target for 3 hearts.
  *
- * <p>Each L can be walked two ways (2-then-1 or 1-then-2), and the Knight may use
- * either. It jumps over anything on the way, but must land on a free, walkable square.
+ * <p>If the knockback square is blocked (wall, river, board edge or another piece), the
+ * enemy stays put and the Knight lands on the square just before it along the L instead
+ * (or stays where it is, for an early stop).
  *
- * <p>Interpretation of docs/HEROES.md, where a Knight can't share a square with its
- * target: see the open question there.
+ * <p>Each L can be walked two ways (2-then-1 or 1-then-2), each with its own facing at
+ * the end, so the player can choose which way to knock the target. The Knight jumps
+ * over anything on the way, but must land on a walkable square.
  */
 public final class KnightCheck implements Attack {
+
+    /** A square on an L path, and the direction the Knight faces when it arrives there. */
+    record Step(Position square, Direction facing) {
+    }
 
     private final String id;
     private final int[] halfHeartsByStop;
@@ -49,16 +56,12 @@ public final class KnightCheck implements Attack {
 
     @Override
     public List<AttackOption> options(Position from, BoardView view) {
-        // Keyed by (aim, landing) so the same attack reached by two paths is listed once.
+        // Keyed by (aim, landing, push destination) so an option reached by two paths is listed once.
         Map<List<Position>, AttackOption> options = new LinkedHashMap<>();
-        for (List<Position> path : allPaths(from)) {
+        for (List<Step> path : allPaths(from)) {
             for (int stop = 0; stop < path.size(); stop++) {
-                Position target = path.get(stop);
+                Position target = path.get(stop).square();
                 if (!view.board().contains(target) || !view.isOccupied(target)) {
-                    continue;
-                }
-                Position landing = stop == 0 ? from : path.get(stop - 1);
-                if (!landing.equals(from) && !view.isFreeToEnter(landing)) {
                     continue;
                 }
                 List<Hit> hits = new ArrayList<>();
@@ -66,7 +69,19 @@ public final class KnightCheck implements Attack {
                 if (stop == path.size() - 1) {
                     addSplash(view, from, target, hits);
                 }
-                options.putIfAbsent(List.of(target, landing), new AttackOption(id, target, landing, hits));
+
+                Position knockTo = target.step(path.get(stop).facing());
+                if (view.isFreeToEnter(knockTo)) {
+                    options.putIfAbsent(List.of(target, target, knockTo),
+                            new AttackOption(id, target, target, hits, List.of(new Effect.Push(target, knockTo))));
+                    continue;
+                }
+
+                // Knockback blocked: the target stays, and the Knight stops just short of it.
+                Position landing = stop == 0 ? from : path.get(stop - 1).square();
+                if (landing.equals(from) || view.isFreeToEnter(landing)) {
+                    options.putIfAbsent(List.of(target, landing), new AttackOption(id, target, landing, hits));
+                }
             }
         }
         return List.copyOf(options.values());
@@ -83,19 +98,20 @@ public final class KnightCheck implements Attack {
 
     /**
      * All 16 ways to walk an L: for each of 4 directions and 2 sides, either
-     * "2 then 1" or "1 then 2". Each path lists its early, middle and end squares.
+     * "2 then 1" or "1 then 2". Each path lists its early, middle and end steps.
      */
-    static List<List<Position>> allPaths(Position from) {
-        List<List<Position>> paths = new ArrayList<>();
+    static List<List<Step>> allPaths(Position from) {
+        List<List<Step>> paths = new ArrayList<>();
         for (Direction forward : Direction.ORTHOGONALS) {
             for (Direction side : forward.perpendiculars()) {
                 Position one = from.step(forward);
                 Position two = one.step(forward);
-                paths.add(List.of(one, two, two.step(side)));
+                paths.add(List.of(new Step(one, forward), new Step(two, forward), new Step(two.step(side), side)));
 
                 Position sideways = from.step(side);
                 Position bend = sideways.step(forward);
-                paths.add(List.of(sideways, bend, bend.step(forward)));
+                paths.add(List.of(new Step(sideways, side), new Step(bend, forward),
+                        new Step(bend.step(forward), forward)));
             }
         }
         return paths;

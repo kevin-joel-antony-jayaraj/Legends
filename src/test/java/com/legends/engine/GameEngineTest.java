@@ -139,21 +139,25 @@ class GameEngineTest {
     }
 
     @Test
-    void knightCheckMovesTheKnightAndSplashes() {
-        // Knight at (5,5). Target at the end of the L (3,6), Castle right next to it at (2,6).
-        GameEngine engine = engine(List.of(at(3, 6), at(5, 5), at(2, 6), at(10, 1)), 1);
-        List<GameEvent> events = engine.perform(new AttackAction(1, "check", at(3, 6), at(3, 5)));
+    void knightCheckTakesTheSquareKnocksBackAndSplashes() {
+        // Knight at (5,5). Archer at the end of the L (3,6); Castle next to the Archer at (4,7).
+        GameEngine engine = engine(List.of(at(3, 6), at(5, 5), at(4, 7), at(10, 1)), 1);
+        List<GameEvent> events = engine.perform(new AttackAction(1, "check", at(3, 6), at(3, 6), at(3, 7)));
 
-        assertEquals(Optional.of(at(3, 5)), engine.game().positionOf(engine.game().heroInSeat(1)));
-        assertEquals(Hearts.of(8 - 3), engine.game().heroInSeat(0).halfHearts());
-        assertEquals(Hearts.of(10 - 3), engine.game().heroInSeat(2).halfHearts());
-        assertEquals(new GameEvent.HeroMoved(1, at(5, 5), at(3, 5)), events.get(0));
+        GameState game = engine.game();
+        assertEquals(Optional.of(at(3, 6)), game.positionOf(game.heroInSeat(1)), "Knight takes the square");
+        assertEquals(Optional.of(at(3, 7)), game.positionOf(game.heroInSeat(0)), "Archer knocked east");
+        assertEquals(Hearts.of(8 - 3), game.heroInSeat(0).halfHearts());
+        assertEquals(Hearts.of(10 - 3), game.heroInSeat(2).halfHearts(), "splash");
+        assertEquals(List.of(
+                new GameEvent.HeroMoved(0, at(3, 6), at(3, 7)),
+                new GameEvent.HeroMoved(1, at(5, 5), at(3, 6))), eventsOf(events, GameEvent.HeroMoved.class));
     }
 
     @Test
-    void knightCheckWithTwoPossibleLandingsNeedsOneChosen() {
+    void knightCheckWithTwoKnockbackDirectionsNeedsOneChosen() {
         GameEngine engine = engine(List.of(at(3, 6), at(5, 5), at(10, 10), at(10, 1)), 1);
-        assertEquals(Optional.of("That check can land in more than one place; say where to land"),
+        assertEquals(Optional.of("That check can be done more than one way; say where to land and push"),
                 engine.check(new AttackAction(1, "check", at(3, 6))));
     }
 

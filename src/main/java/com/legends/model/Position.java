@@ -19,6 +19,14 @@ public record Position(int row, int col) {
         return new Position(row + dRow, col + dCol);
     }
 
+    /**
+     * How many king steps apart two squares are, counting a diagonal step as 1.
+     * "Within 2 squares" in the rules means a distance of 2 or less.
+     */
+    public int kingDistance(Position other) {
+        return Math.max(Math.abs(row - other.row), Math.abs(col - other.col));
+    }
+
     /** Prints as (row,col), so messages and test failures are easy to read. */
     @Override
     public String toString() {

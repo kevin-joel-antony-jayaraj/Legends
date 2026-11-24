@@ -1,8 +1,6 @@
 package com.legends.engine;
 
-import com.legends.engine.event.GameEvent;
 import com.legends.game.GameState;
-import java.util.List;
 import java.util.Optional;
 
 /** End the turn early, giving up any actions left. Costs nothing. */
@@ -24,7 +22,7 @@ public record EndTurnAction(int seat) implements Action {
     }
 
     @Override
-    public void apply(GameState game, List<GameEvent> events) {
+    public void apply(ActionContext context) {
         // Nothing to do here: the engine hands the turn to the next player.
     }
 }
