@@ -2,6 +2,7 @@ package com.legends.engine;
 
 import com.legends.game.GameState;
 import com.legends.hero.attack.AttackOption;
+import com.legends.hero.attack.Effect;
 import com.legends.model.Position;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,9 @@ import java.util.Optional;
  */
 public record AttackAction(int seat, String attackId, Position aim, Position landing, Position pushTo)
         implements Action {
+
+    /** Shown when the Knight picks a square that already has a bomb. The Knight can't see its bombs either. */
+    public static final String BOMB_ALREADY_THERE = "A bomb already exists on that square";
 
     /** For attacks with only one way to hit the aimed square. */
     public AttackAction(int seat, String attackId, Position aim) {
@@ -46,6 +50,9 @@ public record AttackAction(int seat, String attackId, Position aim, Position lan
         if (matches.size() > 1) {
             return Optional.of("That " + attackId + " can be done more than one way; say where to land and push");
         }
+        if (placesBombOnABomb(game, matches.get(0))) {
+            return Optional.of(BOMB_ALREADY_THERE);
+        }
         return Optional.empty();
     }
 
@@ -53,6 +60,12 @@ public record AttackAction(int seat, String attackId, Position aim, Position lan
     public void apply(ActionContext context) {
         GameState game = context.game();
         Combat.resolve(context, game.heroInSeat(seat), matchingOptions(game).get(0));
+    }
+
+    /** Attacks can't see bombs, so this one rule is checked here, where the game state is known. */
+    private static boolean placesBombOnABomb(GameState game, AttackOption option) {
+        return option.effects().stream()
+                .anyMatch(effect -> effect instanceof Effect.PlaceBomb place && game.hasBomb(place.at()));
     }
 
     private List<AttackOption> matchingOptions(GameState game) {

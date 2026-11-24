@@ -221,7 +221,7 @@ public final class GameState implements BoardView {
         bombs.add(new Bomb(at, ownerSeat));
     }
 
-    @Override
+    /** True if a hidden bomb is on this square. For the rules engine only, like {@link #hiddenBombs()}. */
     public boolean hasBomb(Position p) {
         return bombs.stream().anyMatch(bomb -> bomb.at().equals(p));
     }

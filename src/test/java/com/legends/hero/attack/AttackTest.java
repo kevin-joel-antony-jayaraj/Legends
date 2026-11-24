@@ -220,7 +220,7 @@ class AttackTest {
 
     // ----- Supers and the Knife throw -----------------------------------------------
 
-    private static final PushBack SHOCKWAVE = new PushBack("push", 3, 2);
+    private static final PushBack SHOCKWAVE = new PushBack("push", 2, 2); // the Archer's 5x5
 
     @Test
     void pushBackHitsEveryoneInTheSquareAndPushesThemOut() {
@@ -228,14 +228,14 @@ class AttackTest {
         TestView view = new TestView(12).occupy(5, 6).occupy(3, 4);
         AttackOption option = SHOCKWAVE.options(at(5, 5), view).get(0);
         assertEquals(Map.of(at(5, 6), 2, at(3, 4), 2), damageByTarget(option));
-        assertTrue(option.effects().contains(new Effect.Push(at(5, 6), at(5, 9))), "out of the 7x7, just past its edge");
-        assertTrue(option.effects().contains(new Effect.Push(at(3, 4), at(1, 2))), "diagonally away");
+        assertTrue(option.effects().contains(new Effect.Push(at(5, 6), at(5, 8))), "out of the 5x5, just past its edge");
+        assertTrue(option.effects().contains(new Effect.Push(at(3, 4), at(2, 3))), "diagonally away");
     }
 
     @Test
     void pushBackIgnoresPiecesOutsideTheSquare() {
-        TestView view = new TestView(12).occupy(5, 9);
-        assertTrue(SHOCKWAVE.options(at(5, 5), view).isEmpty());
+        TestView view = new TestView(12).occupy(5, 8).occupy(2, 2);
+        assertTrue(SHOCKWAVE.options(at(5, 5), view).isEmpty(), "3 squares away is outside the 5x5");
     }
 
     @Test
@@ -246,10 +246,11 @@ class AttackTest {
 
     @Test
     void pushBackMovesTheFarPieceFirstSoTheNearOneFollows() {
-        // Two pieces in a row to the east: the far one moves out, making room for the near one.
+        // Two pieces in a row to the east: the far one moves out, making room for the near one,
+        // which then stops behind it.
         TestView view = new TestView(12).occupy(5, 6).occupy(5, 7);
         List<Effect> pushes = SHOCKWAVE.options(at(5, 5), view).get(0).effects();
-        assertEquals(List.of(new Effect.Push(at(5, 7), at(5, 9)), new Effect.Push(at(5, 6), at(5, 8))), pushes);
+        assertEquals(List.of(new Effect.Push(at(5, 7), at(5, 8)), new Effect.Push(at(5, 6), at(5, 7))), pushes);
     }
 
     @Test
@@ -286,6 +287,7 @@ class AttackTest {
 
     @Test
     void bombCanGoOnAnyEmptyWalkableSquare() {
+        // Attacks can't see bombs, so squares with bombs are listed too; the engine rejects them.
         TestView view = new TestView(3).occupy(1, 1).tile(0, 0, TileType.RIVER);
         List<Position> squares = aims(new BombDrop("bomb").options(at(1, 1), view));
         assertEquals(7, squares.size(), "9 squares minus the Knight's own and the river");

@@ -15,14 +15,6 @@ public interface BoardView {
 
     boolean isOccupied(Position p);
 
-    /**
-     * True if a hidden bomb is on this square. Only the Knight's bomb placement asks this
-     * (one bomb per square). Views without bombs, like test boards, say no.
-     */
-    default boolean hasBomb(Position p) {
-        return false;
-    }
-
     /** True if a piece could step onto this square: on the board, walkable, and empty. */
     default boolean isFreeToEnter(Position p) {
         return board().contains(p) && board().tileAt(p).isWalkable() && !isOccupied(p);
