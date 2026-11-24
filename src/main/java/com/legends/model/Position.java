@@ -18,4 +18,10 @@ public record Position(int row, int col) {
     public Position offset(int dRow, int dCol) {
         return new Position(row + dRow, col + dCol);
     }
+
+    /** Prints as (row,col), so messages and test failures are easy to read. */
+    @Override
+    public String toString() {
+        return "(" + row + "," + col + ")";
+    }
 }

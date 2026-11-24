@@ -22,6 +22,7 @@ Status: draft. Items marked **TBD** are not decided yet. Hero stats are in [HERO
 ## Turns
 - Turn order is **fixed**: a random player starts each game, then play goes clockwise.
 - If a hero has no legal action on its turn, the turn passes.
+- When a hero uses its last action, the turn passes to the next player automatically.
 - Using a Super costs one action, the same as a Normal attack or a move.
 - Poison damage is applied at the start of the poisoned hero's own turn: 1 heart each time, for 3 rounds (3 hits total).
 - Each hero gets a **fixed number of actions per turn**. An action is one move or one attack (or one Super).

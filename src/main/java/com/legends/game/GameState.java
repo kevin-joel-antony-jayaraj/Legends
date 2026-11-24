@@ -3,6 +3,8 @@ package com.legends.game;
 import com.legends.board.Board;
 import com.legends.board.BoardView;
 import com.legends.hero.Hero;
+import com.legends.hero.attack.Attack;
+import com.legends.hero.attack.AttackOption;
 import com.legends.model.Position;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -94,6 +96,18 @@ public final class GameState implements BoardView {
         return seats.stream().filter(Hero::isAlive).toList();
     }
 
+    /**
+     * The hero in a seat.
+     *
+     * @throws IllegalArgumentException if there is no such seat
+     */
+    public Hero heroInSeat(int seat) {
+        if (seat < 0 || seat >= seats.size()) {
+            throw new IllegalArgumentException("No player in seat " + seat);
+        }
+        return seats.get(seat);
+    }
+
     // ----- Movement -----------------------------------------------------------------
 
     /** Every square this hero could move to right now. Empty for dead or removed heroes. */
@@ -122,6 +136,49 @@ public final class GameState implements BoardView {
     }
 
     /**
+     * Puts a hero on a square without following its movement pattern. For effects like
+     * the Knight's Check (and later pushes, pulls and teleports) where the rules decide the
+     * destination. Still refuses squares that are off the board, unwalkable or occupied.
+     *
+     * @throws IllegalArgumentException if the hero isn't on the board or the square isn't free
+     */
+    public void relocateHero(Hero hero, Position destination) {
+        Position from = positions.get(hero);
+        if (from == null) {
+            throw new IllegalArgumentException(hero + " is not on the board");
+        }
+        if (from.equals(destination)) {
+            return;
+        }
+        if (!isFreeToEnter(destination)) {
+            throw new IllegalArgumentException(hero + " can't be placed on " + destination);
+        }
+        occupants.remove(from);
+        occupants.put(destination, hero);
+        positions.put(hero, destination);
+    }
+
+    // ----- Attacks ------------------------------------------------------------------
+
+    /** Every attack this hero could make right now. Empty for dead or removed heroes. */
+    public List<AttackOption> attackOptions(Hero hero) {
+        Position from = positions.get(hero);
+        if (from == null || !hero.isAlive()) {
+            return List.of();
+        }
+        List<AttackOption> options = new ArrayList<>();
+        for (Attack attack : hero.attacks()) {
+            options.addAll(attack.options(from, this));
+        }
+        return options;
+    }
+
+    /** True if the hero could move or attack right now. */
+    public boolean hasAnyLegalAction(Hero hero) {
+        return !legalMoves(hero).isEmpty() || !attackOptions(hero).isEmpty();
+    }
+
+    /**
      * Takes every hero at 0 hearts off the board, freeing their squares.
      *
      * @return the heroes removed by this call
@@ -138,6 +195,10 @@ public final class GameState implements BoardView {
     }
 
     // ----- Turns --------------------------------------------------------------------
+
+    public int currentSeat() {
+        return currentSeat;
+    }
 
     public Hero currentHero() {
         return seats.get(currentSeat);

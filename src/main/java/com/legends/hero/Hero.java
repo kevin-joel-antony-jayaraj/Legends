@@ -1,7 +1,9 @@
 package com.legends.hero;
 
+import com.legends.hero.attack.Attack;
 import com.legends.hero.meter.SuperMeter;
 import com.legends.hero.movement.MovementPattern;
+import java.util.List;
 
 /**
  * A hero on the board. Abstract: you always create a specific hero (Archer, Knight...).
@@ -11,7 +13,7 @@ import com.legends.hero.movement.MovementPattern;
  * the two can never disagree.
  *
  * <p>Subclasses fill in what makes each hero different: its type, its number of actions
- * per turn, and how it moves.
+ * per turn, how it moves, and its attacks.
  */
 public abstract class Hero {
 
@@ -36,6 +38,9 @@ public abstract class Hero {
 
     /** The rule for where this hero can move. */
     public abstract MovementPattern movement();
+
+    /** The hero's Normal attacks available right now. Supers come in a later version. */
+    public abstract List<Attack> attacks();
 
     public Player owner() {
         return owner;
@@ -76,8 +81,17 @@ public abstract class Hero {
     }
 
     /** Called by combat after this hero lands a hit, so the Super meter can charge. */
-    public void recordHitDealt(int halfHearts) {
+    public final void recordHitDealt(int halfHearts) {
         superMeter.onHitDealt(halfHearts);
+        onHitDealt(halfHearts);
+    }
+
+    /**
+     * Hook for heroes that react to landing a hit (the Pawn evolves). Does nothing by
+     * default. This is the "template method" pattern: the base class decides when it is
+     * called, and a subclass only fills in what happens.
+     */
+    protected void onHitDealt(int halfHearts) {
     }
 
     public boolean hasSuper() {

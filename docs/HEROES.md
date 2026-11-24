@@ -76,12 +76,17 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
 - Players race to the Keystone and defend it, and the Pawn has to fight its way into it.
 
 ## Open questions
-1. **Teleport squares:** settled. The Pawn can teleport to any empty square, including next to enemies, except rivers and blocked tiles.
+1. **Knight's Check landing:** is the v0.3 reading in the implementation notes right? The alternative is that the Knight lands on an empty square and its splash is the attack.
+2. **Teleport squares:** settled. The Pawn can teleport to any empty square, including next to enemies, except rivers and blocked tiles.
 
 ## Implementation notes
 Choices made while coding v0.2 (`src/main/java/com/legends/hero/`) where this doc was not specific:
-- **Knight movement:** a plain move is the full L-jump to its landing square. Stopping early along the L belongs to the "Check" attack, which comes with attacks in v0.3.
+- **Knight movement:** a plain move is the full L-jump to its landing square. Stopping early along the L is part of the Check attack.
+- **Knight's Check (v0.3, needs confirming):** a Knight can't share a square with its target, so Check works like this: the Knight picks an enemy on one of the L's stop points (early, middle or end), the enemy takes 1, 2 or 3 hearts, and the Knight lands on the square just before it along the L (or stays put for an early stop). Hitting the end of the L also splashes every other piece next to the target for 3 hearts. See open question 1.
 - **Pawn evolving:** when its max hearts go up (8 to 10 to 12), the Pawn also gains the extra hearts. A Pawn on 5 of 8 hearts becomes 7 of 10.
 - **Super meters:** a hit that deals no damage doesn't count toward the Archer's or Castle's hit count. The Knight's meter only counts health it actually lost.
 - **Players:** the real game is 4 players, but setup also accepts 2 or 3, which is handy for testing.
 - **Console letters:** A = Archer, K = Knight, C = Castle, W = Pawn (`P` is already the spawn-area tile).
+- **Attacks in v0.3:** every Normal attack is in. Supers, the Pawn's Knife throw, poison, the Keystone and bombs come next.
+- **Multi-target attacks:** each piece hit counts as one hit for Super charging.
+- **Ricochet range:** "within 2 squares" counts diagonals as 1 square, so it covers a 5×5 area around the target.
