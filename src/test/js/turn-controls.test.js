@@ -139,3 +139,12 @@ test('the preview shows where pushed and pulled pieces end up', () => {
   controls.selectAttack('pull');
   assert.deepEqual(controls.highlights(null).pushes, [{ from: at(1, 5), to: at(4, 5) }]);
 });
+
+test('the hint only says "click your hero" for attacks centred on the hero', () => {
+  const controls = new TurnControls();
+  controls.update(view({ attacks: [pull, choice('ricochet', at(3, 5))] }));
+  controls.selectAttack('pull');
+  assert.match(controls.hint(), /click your hero/);
+  controls.selectAttack('ricochet');
+  assert.match(controls.hint(), /Click an orange square/);
+});

@@ -58,9 +58,11 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
 ### Stage 2: Engineer (10 hearts, after the Pawn's first hit)
 - **Trigger:** the Pawn's first hit of any kind.
 - **Normal, "Ricochet chain":**
-  - Pick one adjacent enemy in any direction and hit it for 3 hearts.
-  - The hit then chains to every other enemy within 2 squares of the target, for 1.5 hearts each.
-  - The chain can hit several players at once, which punishes players who team up against the Pawn.
+  - A shot along any of the 8 lines, up to 4 squares. It hits the first enemy in line for 2 hearts. Blocked by forest and walls like an arrow, and can't be fired from inside a forest.
+  - It then bounces to the nearest enemy within 2 squares of the last one hit, **doubling** the damage each time: 2, then 4, then 8 hearts.
+  - Up to 3 hits per shot. Each enemy is hit at most once, and it never bounces back to the Pawn.
+  - Bounces jump over walls and forest. If two enemies are equally near, it goes to the one higher up the board (then further left), so the preview always matches what happens.
+  - Punishes players who bunch up: the third enemy in a chain takes 8 hearts.
 - The Keystone stays on the board.
 
 ### Stage 3: Queen (12 hearts, after the Pawn touches the Keystone)
