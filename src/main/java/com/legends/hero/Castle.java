@@ -22,10 +22,10 @@ public final class Castle extends Hero {
     public static final int HITS_TO_CHARGE_SUPER = 4;
 
     public static final int CLOSE_RANGE = 2;
-    public static final int CLOSE_DAMAGE = Hearts.of(2);
+    public static final int CLOSE_DAMAGE = Hearts.of(3);
     public static final int FAR_DAMAGE = Hearts.of(0.5);
 
-    /** Ranged, straight lines, unlimited range: 2 hearts within 2 squares, half a heart beyond. */
+    /** Ranged, straight lines, unlimited range: 3 hearts within 2 squares, half a heart beyond. */
     private static final Attack LANE_SHOT = LineShot.ranged("lane-shot", Direction.ORTHOGONALS, LineShot.UNLIMITED,
             distance -> distance <= CLOSE_RANGE ? CLOSE_DAMAGE : FAR_DAMAGE);
 

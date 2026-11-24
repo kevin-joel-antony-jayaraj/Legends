@@ -5,7 +5,7 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
 ## Archer
 - **Hearts:** 8
 - **Move:** 1 square in any direction (like a king).
-- **Normal attack, "Diagonal shot":** fires along a diagonal with unlimited range. Hits the first unit in its path. Blocked by forest and walls, not the river. Damage: 2 hearts.
+- **Normal attack, "Diagonal shot":** fires along a diagonal with unlimited range. Hits the first unit in its path. Can't go into forest or through walls; flies over the river. Damage: 3.5 hearts (diagonals are hard to line up, so a hit should hurt).
 - **Normal attack, "Melee":** 1 square, horizontal or vertical only. Damage: 2 hearts.
 - **Super, "Push Back":** a shockwave. Every enemy within 2 squares (a solid 5×5 square around the Archer) takes 1 heart and is pushed straight away from the Archer until it's out of the square. A push stops early at a wall, a unit, or the river's edge.
   - **Charge:** full after the Archer deals damage in 5 hits.
@@ -33,8 +33,8 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
 - **Move:** slides in straight lines (up, down, left, right), up to 3 squares.
 - **Normal, "Lane shot":**
   - Fires along a straight line with unlimited range. Hits the first unit in its path.
-  - Blocked by forest and walls, not the river.
-  - Within 2 squares: 2 hearts.
+  - Can't go into forest or through walls; flies over the river.
+  - Within 2 squares: 3 hearts.
   - Beyond 2 squares: ½ heart.
   - Every hit charges the Super. Full charge after 4 hits.
 - **Super, "Pull":**
@@ -50,7 +50,7 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
 ### Stage 1: Assassin (8 hearts)
 - **Normal, "Knife":**
   - Melee reach 2 in any direction, in a straight line. Adjacent: 2 hearts. Two squares away: 1 heart.
-  - **Throw (one per game):** the Knife can be thrown in any of the 8 directions, with unlimited range, hitting the first unit in its path for 1 heart.
+  - **Throw (one per game):** the Knife can be thrown in any of the 8 directions, up to 3 squares, hitting the first unit in its path for 1 heart.
   - **Poison:** the target is poisoned for 3 rounds, taking 1 heart at the start of each round. That's 3 hearts total. Poison does not stack.
   - Throwing the Knife leaves it on the board as a **Keystone**, on the target's square.
   - Any hit evolves the Pawn to Stage 2 (see below).
@@ -58,7 +58,7 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
 ### Stage 2: Engineer (10 hearts, after the Pawn's first hit)
 - **Trigger:** the Pawn's first hit of any kind.
 - **Normal, "Ricochet chain":**
-  - A shot along any of the 8 lines, up to 4 squares. It hits the first enemy in line for 2 hearts. Blocked by forest and walls like an arrow, and can't be fired from inside a forest.
+  - A shot along any of the 8 lines, up to 4 squares. It hits the first enemy in line for 2 hearts. Like an arrow, it can't go into forest or through walls.
   - It then bounces to the nearest enemy within 2 squares of the last one hit, **doubling** the damage each time: 2, then 4, then 8 hearts.
   - Up to 3 hits per shot. Each enemy is hit at most once, and it never bounces back to the Pawn.
   - Bounces jump over walls and forest. If two enemies are equally near, it goes to the one higher up the board (then further left), so the preview always matches what happens.

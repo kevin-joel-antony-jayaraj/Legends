@@ -21,7 +21,8 @@ public final class Archer extends Hero {
     public static final int HITS_TO_CHARGE_SUPER = 5;
 
     public static final int SHOT_RANGE = LineShot.UNLIMITED;
-    public static final int SHOT_DAMAGE = Hearts.of(2);
+    /** 3.5 hearts: lining up a diagonal is hard, so landing one should hurt. */
+    public static final int SHOT_DAMAGE = Hearts.of(3.5);
     public static final int MELEE_DAMAGE = Hearts.of(2);
 
     /** Ranged, along the diagonals, any distance: hits the first unit in line. */

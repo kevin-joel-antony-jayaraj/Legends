@@ -60,9 +60,11 @@ class AttackTest {
     }
 
     @Test
-    void rangedShotCantBeFiredFromInsideAForest() {
-        TestView view = new TestView(12).tile(5, 5, TileType.FOREST).occupy(4, 4);
-        assertTrue(RANGE_4_DIAGONAL_SHOT.options(at(5, 5), view).isEmpty());
+    void rangedShotCanBeFiredOutOfAForestButNotIntoTheNextForestSquare() {
+        // Shooter in forest at (5,5). NW leaves the forest straight away; NE goes into more forest.
+        TestView view = new TestView(12).tile(5, 5, TileType.FOREST).occupy(3, 3)
+                .tile(4, 6, TileType.FOREST).occupy(3, 7);
+        assertEquals(List.of(at(3, 3)), aims(RANGE_4_DIAGONAL_SHOT.options(at(5, 5), view)));
     }
 
     @Test
@@ -323,10 +325,16 @@ class AttackTest {
     }
 
     @Test
-    void knifeThrowHitsAtAnyRangePoisonsAndDropsTheKeystone() {
-        TestView view = new TestView(12).occupy(0, 5);
-        AttackOption option = new KnifeThrow("throw", 2, 3, 2).options(at(11, 5), view).get(0);
-        assertEquals(Map.of(at(0, 5), 2), damageByTarget(option));
-        assertEquals(List.of(new Effect.Poison(at(0, 5), 3, 2), new Effect.DropKeystone(at(0, 5))), option.effects());
+    void knifeThrowHitsUpToThreeSquaresPoisonsAndDropsTheKeystone() {
+        TestView view = new TestView(12).occupy(8, 5);
+        AttackOption option = new KnifeThrow("throw", 3, 2, 3, 2).options(at(11, 5), view).get(0);
+        assertEquals(Map.of(at(8, 5), 2), damageByTarget(option));
+        assertEquals(List.of(new Effect.Poison(at(8, 5), 3, 2), new Effect.DropKeystone(at(8, 5))), option.effects());
+    }
+
+    @Test
+    void knifeThrowCantReachFourSquares() {
+        TestView view = new TestView(12).occupy(7, 5);
+        assertTrue(new KnifeThrow("throw", 3, 2, 3, 2).options(at(11, 5), view).isEmpty());
     }
 }

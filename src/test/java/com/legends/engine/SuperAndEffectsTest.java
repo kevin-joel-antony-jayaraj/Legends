@@ -196,7 +196,8 @@ class SuperAndEffectsTest {
 
     @Test
     void knifeThrowPoisonsDropsTheKeystoneAndEvolvesThePawn() {
-        GameEngine engine = engine(List.of(at(0, 5), at(1, 10), at(10, 10), at(11, 5)), 3);
+        // Pawn at (3,5) throws 3 squares north (its maximum) at the Archer on (0,5).
+        GameEngine engine = engine(List.of(at(0, 5), at(1, 10), at(10, 10), at(3, 5)), 3);
         List<GameEvent> events = engine.perform(new AttackAction(3, "knife-throw", at(0, 5)));
 
         Pawn pawn = (Pawn) engine.game().heroInSeat(3);
@@ -210,7 +211,7 @@ class SuperAndEffectsTest {
 
     @Test
     void poisonTicksAtTheStartOfTheVictimsTurnsThenWearsOff() {
-        GameEngine engine = engine(List.of(at(0, 5), at(1, 10), at(10, 10), at(11, 5)), 3);
+        GameEngine engine = engine(List.of(at(0, 5), at(1, 10), at(10, 10), at(3, 5)), 3);
         engine.perform(new AttackAction(3, "knife-throw", at(0, 5)));
         Hero archer = engine.game().heroInSeat(0);
         int afterThrow = archer.halfHearts();
@@ -273,7 +274,7 @@ class SuperAndEffectsTest {
 
     @Test
     void poisonCanFinishTheGame() {
-        GameEngine engine = engine(List.of(at(0, 5), at(1, 10), at(10, 10), at(11, 5)), 3);
+        GameEngine engine = engine(List.of(at(0, 5), at(1, 10), at(10, 10), at(3, 5)), 3);
         GameState game = engine.game();
         game.heroInSeat(1).takeDamage(Hearts.of(12));
         game.heroInSeat(2).takeDamage(Hearts.of(10));
