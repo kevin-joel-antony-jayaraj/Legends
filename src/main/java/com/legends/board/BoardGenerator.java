@@ -1,6 +1,7 @@
 package com.legends.board;
 
 import com.legends.model.Position;
+import com.legends.model.Seeds;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -20,8 +21,8 @@ import java.util.Set;
  *   <li>Check the result ({@link BoardValidator}). If it fails, start again.</li>
  * </ol>
  *
- * <p>Every random choice comes from one {@link Random} seeded once, so the same seed
- * always produces the same board, including any retries.
+ * <p>Every random choice comes from one {@link Random} seeded once (via {@link Seeds}),
+ * so the same seed always produces the same board, including any retries.
  */
 public final class BoardGenerator {
 
@@ -31,8 +32,11 @@ public final class BoardGenerator {
     private static final List<CornerType> CORNER_MIX =
             List.of(CornerType.RIVER, CornerType.RIVER, CornerType.FOREST, CornerType.OPEN);
 
+    /** Keeps the board's random numbers separate from other uses of the same seed. */
+    private static final long BOARD_SALT = 0x0B0A_4D00_0000_0001L;
+
     public GeneratedBoard generate(long seed) {
-        Random random = new Random(seed);
+        Random random = Seeds.random(seed, BOARD_SALT);
 
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             Board board = new Board(BoardLayout.SIZE, BoardLayout.SIZE);

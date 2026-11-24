@@ -42,7 +42,7 @@ Shapes are **irregular blobs**, not perfect squares. The hero starts one square 
 ## Validity checks
 After generating a board, check these before the game starts. If any fail, generate again.
 1. Every hero can reach every other hero's start square by walking or using bridges. Walls and rivers can't seal a corner.
-2. Each hero has at least one walkable square next to its start square.
+2. Each hero has at least one walkable square next to its start square, and a Knight starting there would have at least one square to jump to.
 3. No two heroes start on the same square.
 
 ## Sample board

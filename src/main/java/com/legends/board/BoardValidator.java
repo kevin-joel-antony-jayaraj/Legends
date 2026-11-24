@@ -1,5 +1,6 @@
 package com.legends.board;
 
+import com.legends.model.Offset;
 import com.legends.model.Position;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,6 +34,8 @@ public final class BoardValidator {
                 problems.add("Start " + start + " is on " + board.tileAt(start) + ", which is not walkable");
             } else if (!hasWalkableNeighbour(board, start)) {
                 problems.add("Start " + start + " has no walkable square next to it");
+            } else if (!hasKnightLanding(board, start)) {
+                problems.add("A Knight starting on " + start + " would have nowhere to jump");
             }
         }
         if (!problems.isEmpty() || starts.isEmpty()) {
@@ -51,6 +54,21 @@ public final class BoardValidator {
     private static boolean hasWalkableNeighbour(Board board, Position p) {
         return Reachability.ORTHOGONAL.stream()
                 .map(p::step)
-                .anyMatch(n -> board.contains(n) && board.tileAt(n).isWalkable());
+                .anyMatch(n -> isWalkable(board, n));
+    }
+
+    /**
+     * Any hero might start on any corner, so a Knight must be able to jump out of every
+     * start square. A small spawn area with a thick moat can leave every L-jump landing
+     * in water.
+     */
+    private static boolean hasKnightLanding(Board board, Position p) {
+        return Offset.KNIGHT_JUMPS.stream()
+                .map(jump -> jump.from(p))
+                .anyMatch(n -> isWalkable(board, n));
+    }
+
+    private static boolean isWalkable(Board board, Position p) {
+        return board.contains(p) && board.tileAt(p).isWalkable();
     }
 }

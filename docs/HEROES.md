@@ -77,3 +77,11 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
 
 ## Open questions
 1. **Teleport squares:** settled. The Pawn can teleport to any empty square, including next to enemies, except rivers and blocked tiles.
+
+## Implementation notes
+Choices made while coding v0.2 (`src/main/java/com/legends/hero/`) where this doc was not specific:
+- **Knight movement:** a plain move is the full L-jump to its landing square. Stopping early along the L belongs to the "Check" attack, which comes with attacks in v0.3.
+- **Pawn evolving:** when its max hearts go up (8 to 10 to 12), the Pawn also gains the extra hearts. A Pawn on 5 of 8 hearts becomes 7 of 10.
+- **Super meters:** a hit that deals no damage doesn't count toward the Archer's or Castle's hit count. The Knight's meter only counts health it actually lost.
+- **Players:** the real game is 4 players, but setup also accepts 2 or 3, which is handy for testing.
+- **Console letters:** A = Archer, K = Knight, C = Castle, W = Pawn (`P` is already the spawn-area tile).
