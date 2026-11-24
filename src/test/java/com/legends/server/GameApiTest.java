@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.legends.server.api.GameController;
+import com.legends.server.game.GameService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,18 @@ class GameApiTest {
     @Test
     void creatingAGameGivesEachSeatItsOwnToken() {
         assertThat(tokens).doesNotContainNull().doesNotHaveDuplicates();
+    }
+
+    @Test
+    void aRandomSeedIsSmallEnoughForABrowserToKeepExactly() throws Exception {
+        String twoPlayers = """
+                {"players": [{"name": "Ana", "hero": "ARCHER"}, {"name": "Ben", "hero": "KNIGHT"}]}""";
+        for (int i = 0; i < 20; i++) {
+            String body = mvc.perform(post("/api/games").contentType(MediaType.APPLICATION_JSON).content(twoPlayers))
+                    .andExpect(status().isCreated())
+                    .andReturn().getResponse().getContentAsString();
+            assertThat(json.readTree(body).get("seed").asLong()).isBetween(0L, GameService.RANDOM_SEED_LIMIT - 1);
+        }
     }
 
     @Test

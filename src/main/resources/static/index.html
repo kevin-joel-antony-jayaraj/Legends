@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Legends: new game</title>
+  <link rel="stylesheet" href="css/legends.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo" href="/">Legends</a>
+  </header>
+
+  <main class="panel narrow">
+    <section id="setup">
+      <h1>New game</h1>
+      <p class="muted">2 to 4 heroes, free for all. Last hero standing wins. Seats go clockwise from the top-left corner.</p>
+      <form id="setup-form">
+        <div id="player-rows" class="player-rows"></div>
+        <div class="row-buttons">
+          <button type="button" id="add-player">+ Add player</button>
+          <button type="button" id="remove-player">− Remove player</button>
+        </div>
+        <label class="seed">Board seed <span class="muted">(optional; same seed, same board)</span>
+          <input id="seed" type="number" inputmode="numeric" placeholder="random">
+        </label>
+        <button type="submit" class="primary">Create game</button>
+      </form>
+    </section>
+
+    <section id="links" hidden>
+      <h1>Send each player their link</h1>
+      <p class="muted">Whoever opens a link plays that seat, so send each one only to its player.
+        To play on one computer, open every link in its own tab.</p>
+      <label class="address">Links use
+        <select id="address"></select>
+      </label>
+      <p id="address-note" class="muted small"></p>
+      <ol id="seat-links" class="seat-links"></ol>
+      <p class="muted small">Board seed: <span id="seed-used"></span></p>
+      <button type="button" id="again">Set up another game</button>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="alert" hidden></div>
+
+  <script type="module" src="js/lobby.js"></script>
+</body>
+</html>
