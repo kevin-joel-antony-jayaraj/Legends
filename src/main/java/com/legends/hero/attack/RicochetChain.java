@@ -14,8 +14,8 @@ import java.util.Optional;
  *
  * <ol>
  *   <li>The shot flies along one of the 8 lines, up to {@code range} squares, and hits the
- *       first piece. Like an arrow, it's blocked by forest and walls and can't be fired
- *       from inside a forest.</li>
+ *       first piece. Like an arrow, it's blocked by walls and can't go into a forest
+ *       (it can be fired out of one).</li>
  *   <li>It then bounces to the nearest piece within {@code bounceRadius} squares of the
  *       last one it hit, skipping pieces it already hit and the Pawn itself. Bounces are
  *       ricochets, not line shots, so they jump over walls and forest.</li>
@@ -56,9 +56,6 @@ public final class RicochetChain implements Attack {
 
     @Override
     public List<AttackOption> options(Position from, BoardView view) {
-        if (!Lines.canFireFrom(view, from)) {
-            return List.of();
-        }
         List<AttackOption> options = new ArrayList<>();
         for (Direction direction : Direction.ALL) {
             Lines.firstPiece(view, from, direction, range, true)

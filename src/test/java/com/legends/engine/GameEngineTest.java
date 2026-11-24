@@ -116,8 +116,8 @@ class GameEngineTest {
         List<GameEvent> events = engine.perform(new AttackAction(0, "diagonal-shot", at(3, 3)));
 
         Hero knight = engine.game().heroInSeat(1);
-        assertEquals(Hearts.of(12 - 2), knight.halfHearts());
-        assertEquals(List.of(new GameEvent.HeroDamaged(1, 0, "diagonal-shot", Hearts.of(2), Hearts.of(10))),
+        assertEquals(Hearts.of(12 - 3.5), knight.halfHearts());
+        assertEquals(List.of(new GameEvent.HeroDamaged(1, 0, "diagonal-shot", Hearts.of(3.5), Hearts.of(8.5))),
                 eventsOf(events, GameEvent.HeroDamaged.class));
         assertEquals(1.0 / Archer.HITS_TO_CHARGE_SUPER, engine.game().heroInSeat(0).superProgress());
     }
@@ -134,8 +134,8 @@ class GameEngineTest {
         GameEngine engine = engine(List.of(at(3, 5), at(1, 10), at(5, 5), at(10, 5)), 2);
         engine.perform(new AttackAction(2, "lane-shot", at(3, 5)));
         engine.perform(new AttackAction(2, "lane-shot", at(10, 5)));
-        assertEquals(Hearts.of(8 - 2), engine.game().heroInSeat(0).halfHearts());
-        assertEquals(Hearts.of(8 - 0.5), engine.game().heroInSeat(3).halfHearts());
+        assertEquals(Hearts.of(8 - 3), engine.game().heroInSeat(0).halfHearts(), "close: 3 hearts");
+        assertEquals(Hearts.of(8 - 0.5), engine.game().heroInSeat(3).halfHearts(), "far: half a heart");
     }
 
     @Test

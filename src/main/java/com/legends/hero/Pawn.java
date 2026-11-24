@@ -46,12 +46,13 @@ public final class Pawn extends Hero {
     /** Queen: first piece on each of the 8 lines, up to 4 squares, 2 hearts each. */
     private static final Attack QUEEN_LINES = new QueenLines("queen-lines", 4, Hearts.of(2));
 
-    /** Knife throw: 1 heart, then 1 heart of poison at the start of each of the target's next 3 turns. */
+    /** Knife throw: up to 3 squares, 1 heart, then 1 heart of poison at the start of each of the target's next 3 turns. */
+    public static final int THROW_RANGE = 3;
     public static final int THROW_DAMAGE = Hearts.of(1);
     public static final int POISON_TURNS = 3;
     public static final int POISON_DAMAGE = Hearts.of(1);
 
-    private static final Attack KNIFE_THROW = new KnifeThrow("knife-throw", THROW_DAMAGE, POISON_TURNS, POISON_DAMAGE);
+    private static final Attack KNIFE_THROW = new KnifeThrow("knife-throw", THROW_RANGE, THROW_DAMAGE, POISON_TURNS, POISON_DAMAGE);
 
     private PawnStage stage = PawnStage.ASSASSIN;
     private boolean knifeThrown;

@@ -9,9 +9,10 @@ import java.util.Optional;
 /**
  * Shared line-of-sight rules for attacks that travel in a straight line.
  *
- * <p>Ranged attacks (arrows, shots) stop at forest and walls, and can't be fired from
- * inside a forest. Melee attacks with reach (like the Knife) stop only at walls. Both
- * pass over rivers. See docs/BOARD.md.
+ * <p>Ranged attacks (arrows, shots) stop at forest and walls. Forest is cover: a shot
+ * can't go into it, so a unit inside can't be shot, but a unit inside can shoot out
+ * (the shooter's own square is never checked). Melee attacks with reach (like the
+ * Knife) stop only at walls. Both pass over rivers. See docs/BOARD.md.
  */
 final class Lines {
 
@@ -35,7 +36,7 @@ final class Lines {
             }
             TileType tile = view.board().tileAt(square);
             if (ranged ? tile.blocksArrows() : tile.blocksMelee()) {
-                // A piece standing in a forest can't be hit by a ranged attack, so check this first.
+                // Forest is cover: a piece standing in it can't be hit by a ranged attack, so check this first.
                 return Optional.empty();
             }
             if (view.isOccupied(square)) {
@@ -61,10 +62,5 @@ final class Lines {
             current = next;
         }
         return current;
-    }
-
-    /** Ranged attacks can't be fired from inside a forest. */
-    static boolean canFireFrom(BoardView view, Position from) {
-        return !view.board().tileAt(from).blocksArrows();
     }
 }

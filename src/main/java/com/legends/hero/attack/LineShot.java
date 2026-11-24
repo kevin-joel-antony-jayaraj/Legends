@@ -42,7 +42,7 @@ public final class LineShot implements Attack {
     }
 
     /**
-     * A ranged attack: blocked by forest and walls, and can't be fired from a forest.
+     * A ranged attack: blocked by walls and by forest (it can be fired out of a forest, not into one).
      *
      * @param damageAtDistance half-hearts of damage for a target this many squares away
      */
@@ -66,9 +66,6 @@ public final class LineShot implements Attack {
 
     @Override
     public List<AttackOption> options(Position from, BoardView view) {
-        if (ranged && !Lines.canFireFrom(view, from)) {
-            return List.of();
-        }
         List<AttackOption> options = new ArrayList<>();
         for (Direction direction : directions) {
             Lines.firstPiece(view, from, direction, maxRange, ranged).ifPresent(found -> {

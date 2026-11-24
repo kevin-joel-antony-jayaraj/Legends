@@ -19,7 +19,7 @@ See [RULES.md](RULES.md) for the shared rules and [HEROES.md](HEROES.md) for the
 | `S` | Start square | Yes | No | Where a hero starts. One square in from the corner. |
 | `~` | River | No | No | Arrows fly over. Castle pull can't cross it. |
 | `=` | Bridge | Yes | No | The only walkable crossing over the river |
-| `F` | Forest | Yes | Partly | Ranged shots can't pass through or out of it. Only melee or Knight splash can hit a unit inside. Melee reach (the Knife) passes through it. |
+| `F` | Forest | Yes | Partly | Cover. Ranged shots can't go into it, so a unit inside can only be hit by melee, the Knight, bombs or area attacks. A unit inside **can** shoot out, but not into the next forest square. Melee reach (the Knife) passes through it. |
 | `#` | Wall | No | Yes | Permanent for now. Also blocks melee reach. |
 
 ## Corner types
