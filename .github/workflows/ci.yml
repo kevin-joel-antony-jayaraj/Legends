@@ -15,5 +15,10 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - name: Run tests
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run server and game tests (Java)
         run: mvn -B test
+      - name: Run browser client tests (JavaScript)
+        run: node --test 'src/test/js/*.test.js'

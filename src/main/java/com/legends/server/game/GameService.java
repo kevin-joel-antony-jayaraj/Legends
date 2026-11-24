@@ -38,6 +38,13 @@ public class GameService {
     public record ActionOutcome(List<EventView> events, GameView view) {
     }
 
+    /**
+     * Random seeds stay below this. Short enough to read out and type back in to replay a
+     * board, and small enough that a browser's JavaScript numbers hold it exactly (they
+     * can't hold every 64-bit long).
+     */
+    public static final long RANDOM_SEED_LIMIT = 1_000_000_000L;
+
     private final Map<String, GameSession> games = new ConcurrentHashMap<>();
     private final GameSetup setup = new GameSetup();
     private final SecureRandom seeds = new SecureRandom();
@@ -50,11 +57,11 @@ public class GameService {
     /**
      * Starts a game.
      *
-     * @param seed    the board seed, or null for a random one
+     * @param seed    the board seed, or null for a random one below {@link #RANDOM_SEED_LIMIT}
      * @param players 2 to 4 players in clockwise seat order
      */
     public CreatedGame create(Long seed, List<PlayerChoice> players) {
-        long actualSeed = seed != null ? seed : seeds.nextLong();
+        long actualSeed = seed != null ? seed : seeds.nextLong(RANDOM_SEED_LIMIT);
         GameState state = setup.newGame(actualSeed, players);
 
         String gameId = UUID.randomUUID().toString();

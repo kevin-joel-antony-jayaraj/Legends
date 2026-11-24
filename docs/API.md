@@ -2,7 +2,7 @@
 
 The server wraps the game engine for the network. All rules run on the server; a client only shows the game and sends requests.
 
-Start it with `mvn spring-boot:run` (or `java -jar target/legends-*.jar` after `mvn package`). It listens on http://localhost:8080.
+Start it with `mvn spring-boot:run` (or `java -jar target/legends-*.jar` after `mvn package`). It listens on http://localhost:8080, which also serves the browser client: the lobby at `/` and the game at `/play.html?game={gameId}&token={token}`.
 
 ## Who is asking: player tokens
 Creating a game returns a secret **token** for each seat. Send it with every request in the `X-Player-Token` header. Whoever has a seat's token can play that seat, so give each player only their own.
@@ -18,7 +18,7 @@ Creating a game returns a secret **token** for each seat. Send it with every req
   {"name": "Dev",  "hero": "PAWN"}]}
 ```
 - 2 to 4 players, in clockwise seat order. Heroes: `ARCHER`, `KNIGHT`, `CASTLE`, `PAWN`.
-- `seed` is optional. Leave it out for a random board.
+- `seed` is optional. Leave it out for a random board; random seeds are below 1,000,000,000 so they're easy to share and JavaScript holds them exactly.
 
 Response `201`:
 ```json
@@ -49,6 +49,8 @@ Hidden bombs never appear in a view.
 ```
 For an attack, copy `attackId`, `aim`, `landing` and `pushTo` from one of the `yourAttacks` entries.
 
+Each `yourAttacks` entry also has `hits` (every square that takes damage, and how much) and `pushes` (every piece the attack moves, as `from` and `to`), so a client can preview it. Area attacks (Push Back, Pull, Queen lines) have a single entry aimed at the hero's own square.
+
 Response `200`: the `events` that happened, in order, and your updated `view`.
 ```json
 {"events": [{"type": "HeroMoved", "data": {"seat": 1, "from": {"row": 1, "col": 10}, "to": {"row": 0, "col": 8}}}],
@@ -71,3 +73,11 @@ Every error has a body like `{"error": "It's not your turn"}`.
 ## Limits for now
 - Games live in memory and are lost when the server restarts.
 - The game creator receives every seat's token and hands them out. A proper lobby (join a game, pick a seat) comes later.
+
+## Server info
+`GET /api/server` (no token needed)
+
+```json
+{"lanAddresses": ["192.168.1.20"], "port": 8080}
+```
+This computer's addresses on the local network, and the port the request came in on. The lobby uses it to build join links that work from other computers, since `localhost` only works on the server's own machine.

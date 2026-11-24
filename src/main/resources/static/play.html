@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Legends</title>
+  <link rel="stylesheet" href="css/legends.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo" href="/">Legends</a>
+    <span id="connection" class="connecting">connecting…</span>
+  </header>
+
+  <main id="game" class="game">
+    <section class="board-area">
+      <div id="status" class="status">Loading…</div>
+      <canvas id="board" width="646" height="646" aria-label="Game board"></canvas>
+      <div id="hint" class="hint"></div>
+      <div id="actions" class="actions"></div>
+    </section>
+
+    <aside class="sidebar">
+      <h2>Players</h2>
+      <div id="players" class="players"></div>
+      <h2>What happened</h2>
+      <ol id="log" class="log"></ol>
+      <details class="help">
+        <summary>How to play</summary>
+        <ul>
+          <li>On your turn, dots show where you can move. Click one.</li>
+          <li>Pick an attack (or press its number), then click an orange square. Hover first to preview: red is damage, blue arrows show pushes and pulls.</li>
+          <li>Attacks that hit everything around you (Push Back, Pull, Queen lines) fire when you click your hero, anyone they affect, or the button again.</li>
+          <li>★ buttons are Supers. A dashed gold ring means a hero's Super is ready.</li>
+          <li>The gold diamond is the Keystone. The green dot means poisoned.</li>
+          <li><kbd>Esc</kbd> cancels, <kbd>M</kbd> goes back to moving, <kbd>Enter</kbd> ends your turn.</li>
+          <li>Bombs are hidden from everyone. Remember where they went off.</li>
+        </ul>
+      </details>
+    </aside>
+  </main>
+
+  <section id="missing" class="panel narrow" hidden>
+    <h1>No game here</h1>
+    <p>This page needs a join link with a game and a player token. <a href="/">Start a new game</a>.</p>
+  </section>
+
+  <div id="gameover" class="overlay" hidden>
+    <div class="panel">
+      <h1 id="gameover-text"></h1>
+      <button type="button" id="gameover-close">See the board</button>
+      <a class="button" href="/">New game</a>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="alert" hidden></div>
+
+  <script type="module" src="js/play.js"></script>
+</body>
+</html>
