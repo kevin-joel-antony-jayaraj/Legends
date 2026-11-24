@@ -33,6 +33,8 @@ public final class GameState implements BoardView {
     private final List<Hero> seats;
     private final Map<Hero, Position> positions = new HashMap<>();
     private final Map<Position, Hero> occupants = new HashMap<>();
+    private final List<Bomb> bombs = new ArrayList<>();
+    private Keystone keystone;
 
     private int currentSeat;
     private int actionsLeft;
@@ -160,7 +162,10 @@ public final class GameState implements BoardView {
 
     // ----- Attacks ------------------------------------------------------------------
 
-    /** Every attack this hero could make right now. Empty for dead or removed heroes. */
+    /**
+     * Every attack this hero could make right now, including its Super if charged.
+     * Empty for dead or removed heroes.
+     */
     public List<AttackOption> attackOptions(Hero hero) {
         Position from = positions.get(hero);
         if (from == null || !hero.isAlive()) {
@@ -170,7 +175,15 @@ public final class GameState implements BoardView {
         for (Attack attack : hero.attacks()) {
             options.addAll(attack.options(from, this));
         }
+        if (hero.isSuperReady()) {
+            hero.superAttack().ifPresent(attack -> options.addAll(attack.options(from, this)));
+        }
         return options;
+    }
+
+    /** True if {@code attackId} is this hero's Super. */
+    public boolean isSuper(Hero hero, String attackId) {
+        return hero.superAttack().map(attack -> attack.id().equals(attackId)).orElse(false);
     }
 
     /** True if the hero could move or attack right now. */
@@ -192,6 +205,53 @@ public final class GameState implements BoardView {
             }
         }
         return removed;
+    }
+
+    // ----- Bombs (hidden) and the Keystone -------------------------------------------
+
+    /**
+     * Hides a bomb. More than one bomb may share a square.
+     *
+     * @throws IllegalArgumentException if the square is off the board or not walkable
+     */
+    public void placeBomb(Position at, int ownerSeat) {
+        if (!board.contains(at) || !board.tileAt(at).isWalkable()) {
+            throw new IllegalArgumentException("Can't place a bomb on " + at);
+        }
+        bombs.add(new Bomb(at, ownerSeat));
+    }
+
+    /**
+     * All hidden bombs. For the rules engine only: this is secret information that must
+     * never be shown or sent to players.
+     */
+    public List<Bomb> hiddenBombs() {
+        return List.copyOf(bombs);
+    }
+
+    /** @return true if the bomb was there and is now gone */
+    public boolean removeBomb(Bomb bomb) {
+        return bombs.remove(bomb);
+    }
+
+    public Optional<Keystone> keystone() {
+        return Optional.ofNullable(keystone);
+    }
+
+    /**
+     * Puts the Keystone on the board. There is only ever one.
+     *
+     * @throws IllegalStateException if a Keystone is already on the board
+     */
+    public void dropKeystone(Position at, int ownerSeat) {
+        if (keystone != null) {
+            throw new IllegalStateException("There is already a Keystone on " + keystone.at());
+        }
+        keystone = new Keystone(at, ownerSeat);
+    }
+
+    public void removeKeystone() {
+        keystone = null;
     }
 
     // ----- Turns --------------------------------------------------------------------

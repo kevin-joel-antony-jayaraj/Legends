@@ -4,7 +4,6 @@ import com.legends.engine.event.GameEvent;
 import com.legends.game.GameState;
 import com.legends.hero.Hero;
 import com.legends.model.Position;
-import java.util.List;
 import java.util.Optional;
 
 /** Move the current hero to a square its movement pattern allows. Costs 1 action. */
@@ -25,10 +24,12 @@ public record MoveAction(int seat, Position to) implements Action {
     }
 
     @Override
-    public void apply(GameState game, List<GameEvent> events) {
+    public void apply(ActionContext context) {
+        GameState game = context.game();
         Hero hero = game.heroInSeat(seat);
         Position from = game.positionOf(hero).orElseThrow();
         game.moveHero(hero, to);
-        events.add(new GameEvent.HeroMoved(seat, from, to));
+        context.report(new GameEvent.HeroMoved(seat, from, to));
+        Arrivals.arrive(context, hero);
     }
 }

@@ -53,6 +53,16 @@ public enum Direction {
         return !isOrthogonal();
     }
 
+    /** The direction pointing the other way (N becomes S, NE becomes SW). */
+    public Direction opposite() {
+        for (Direction d : values()) {
+            if (d.dRow == -dRow && d.dCol == -dCol) {
+                return d;
+            }
+        }
+        throw new IllegalStateException("No opposite for " + this);
+    }
+
     /** The two directions at right angles to this one (for N: W and E). Only for orthogonal directions. */
     public List<Direction> perpendiculars() {
         if (!isOrthogonal()) {

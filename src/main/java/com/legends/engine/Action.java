@@ -1,8 +1,6 @@
 package com.legends.engine;
 
-import com.legends.engine.event.GameEvent;
 import com.legends.game.GameState;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,6 +30,6 @@ public sealed interface Action permits MoveAction, AttackAction, EndTurnAction {
     /** Why this action isn't allowed right now, or empty if it is. Changes nothing. */
     Optional<String> problem(GameState game);
 
-    /** Carries out the action and reports what happened. Only called after {@link #problem} found nothing. */
-    void apply(GameState game, List<GameEvent> events);
+    /** Carries out the action. Only called after {@link #problem} found nothing. */
+    void apply(ActionContext context);
 }

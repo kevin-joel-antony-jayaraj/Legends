@@ -25,8 +25,16 @@ final class EventText {
                     name(game, e.targetSeat()) + " takes " + Hearts.format(e.halfHearts()) + " hearts from "
                             + name(game, e.attackerSeat()) + "'s " + e.attackId()
                             + " (" + Hearts.format(e.halfHeartsLeft()) + " left)";
+            case GameEvent.HeroHealed e ->
+                    name(game, e.seat()) + " is healed for " + Hearts.format(e.halfHearts()) + " hearts";
+            case GameEvent.HeroPoisoned e -> name(game, e.seat()) + " is poisoned for " + e.turns() + " turns";
             case GameEvent.HeroDefeated e -> name(game, e.seat()) + " is defeated!";
+            case GameEvent.SuperUsed e -> name(game, e.seat()) + " uses SUPER: " + e.attackId() + "!";
             case GameEvent.PawnEvolved e -> name(game, e.seat()) + " evolves into " + e.stage() + "!";
+            case GameEvent.BombPlaced e -> name(game, e.seat()) + " hides a bomb somewhere...";
+            case GameEvent.BombExploded e -> "BOOM! A bomb explodes at " + square(e.at());
+            case GameEvent.KeystoneDropped e -> "The Keystone appears at " + square(e.at());
+            case GameEvent.KeystoneClaimed e -> name(game, e.seat()) + " claims the Keystone!";
             case GameEvent.TurnStarted e ->
                     "--- " + name(game, e.seat()) + "'s turn (" + e.actions() + " actions) ---";
             case GameEvent.TurnSkipped e -> name(game, e.seat()) + " has no legal action and is skipped";

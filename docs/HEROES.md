@@ -17,6 +17,7 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
   - Can stop on any square along the L. Only the stop square is hit.
   - Damage by stop point: early on the L 1 heart, middle 2 hearts, last square 3 hearts.
   - Landing on the last square also hits every enemy within one square of it for 3 hearts.
+  - The Knight takes the enemy's square and knocks the enemy back one square in the direction it's facing.
 - **Super, "Bomb":**
   - Places a bomb on any empty square on the board.
   - Once placed, the bomb is hidden from everyone, including the Knight. Players must remember where it is.
@@ -76,17 +77,24 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
 - Players race to the Keystone and defend it, and the Pawn has to fight its way into it.
 
 ## Open questions
-1. **Knight's Check landing:** is the v0.3 reading in the implementation notes right? The alternative is that the Knight lands on an empty square and its splash is the attack.
+1. **Knight's Check landing:** settled. The Knight takes the target's square and knocks it back (see the implementation notes).
 2. **Teleport squares:** settled. The Pawn can teleport to any empty square, including next to enemies, except rivers and blocked tiles.
 
 ## Implementation notes
 Choices made while coding v0.2 (`src/main/java/com/legends/hero/`) where this doc was not specific:
 - **Knight movement:** a plain move is the full L-jump to its landing square. Stopping early along the L is part of the Check attack.
-- **Knight's Check (v0.3, needs confirming):** a Knight can't share a square with its target, so Check works like this: the Knight picks an enemy on one of the L's stop points (early, middle or end), the enemy takes 1, 2 or 3 hearts, and the Knight lands on the square just before it along the L (or stays put for an early stop). Hitting the end of the L also splashes every other piece next to the target for 3 hearts. See open question 1.
+- **Knight's Check (decided in v0.4):** the Knight lands on the enemy's square and knocks the enemy back one square in the direction the Knight is facing (the direction of its last step into that square). Each end of the L can be reached two ways, so the player picks which way to knock. Damage by stop point is 1, 2 or 3 hearts, and hitting the end of the L splashes everyone next to the target for 3.
+- **Blocked knockback:** if the square behind the enemy is a wall, river, board edge or another piece, the enemy stays put and the Knight lands on the square before it (or stays where it is, for an early stop).
 - **Pawn evolving:** when its max hearts go up (8 to 10 to 12), the Pawn also gains the extra hearts. A Pawn on 5 of 8 hearts becomes 7 of 10.
 - **Super meters:** a hit that deals no damage doesn't count toward the Archer's or Castle's hit count. The Knight's meter only counts health it actually lost.
 - **Players:** the real game is 4 players, but setup also accepts 2 or 3, which is handy for testing.
 - **Console letters:** A = Archer, K = Knight, C = Castle, W = Pawn (`P` is already the spawn-area tile).
-- **Attacks in v0.3:** every Normal attack is in. Supers, the Pawn's Knife throw, poison, the Keystone and bombs come next.
+- **Supers:** a Super costs one action, is only offered when charged, and empties the meter. Its own hits don't refill the meter.
+- **Archer's Push Back:** aims like a ranged shot (any of the 8 directions, first piece within 4 squares, blocked by forest and walls). Pushes up to 3 squares straight away from the Archer.
+- **Castle's Pull:** a wall between the Castle and a piece blocks the pull on that line. Forest doesn't. Rivers stop the pulled piece at the edge.
+- **Bombs:** each bomb's blast hits every enemy within 1 square (a 3×3 area) for 3 hearts. A blast sets off every other bomb within 2 squares, and each of those blasts too. Bombs go off whenever an enemy arrives on the square, including by being pushed or knocked back. Two bombs can share a square: refusing a square would reveal that a bomb is there.
+- **Knife throw:** stays available until it's used, as an Assassin or an Engineer, because it's the only way to drop the Keystone. It's a ranged attack.
+- **Poison:** ticks at the start of the victim's own turn, and can defeat them.
+- **Keystone teleport:** lands on a random free square, never on a hidden bomb.
 - **Multi-target attacks:** each piece hit counts as one hit for Super charging.
 - **Ricochet range:** "within 2 squares" counts diagonals as 1 square, so it covers a 5×5 area around the target.

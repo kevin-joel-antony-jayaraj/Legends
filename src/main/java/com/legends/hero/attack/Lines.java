@@ -45,6 +45,24 @@ final class Lines {
         return Optional.empty();
     }
 
+    /**
+     * Slides a piece from {@code start} up to {@code maxSquares} in one direction, stopping
+     * before anything it can't enter: walls, rivers, other pieces or the board edge.
+     *
+     * @return where the piece ends up ({@code start} if it can't move at all)
+     */
+    static Position slide(BoardView view, Position start, Direction direction, int maxSquares) {
+        Position current = start;
+        for (int i = 0; i < maxSquares; i++) {
+            Position next = current.step(direction);
+            if (!view.isFreeToEnter(next)) {
+                break;
+            }
+            current = next;
+        }
+        return current;
+    }
+
     /** Ranged attacks can't be fired from inside a forest. */
     static boolean canFireFrom(BoardView view, Position from) {
         return !view.board().tileAt(from).blocksArrows();

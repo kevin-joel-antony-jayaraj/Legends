@@ -1,11 +1,13 @@
 package com.legends.hero;
 
 import com.legends.hero.attack.Attack;
+import com.legends.hero.attack.BombDrop;
 import com.legends.hero.attack.KnightCheck;
 import com.legends.hero.meter.DamageTakenMeter;
 import com.legends.hero.movement.KnightJump;
 import com.legends.hero.movement.MovementPattern;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The tank. L-jump movement, the Check landing attack, and a hidden Bomb Super that
@@ -25,6 +27,14 @@ public final class Knight extends Hero {
 
     private static final Attack CHECK = new KnightCheck("check",
             new int[] {CHECK_EARLY_DAMAGE, CHECK_MIDDLE_DAMAGE, CHECK_END_DAMAGE}, CHECK_SPLASH_DAMAGE);
+
+    /** Bomb rules: damage per blast, blast size around the bomb, and how far a blast sets off other bombs. */
+    public static final int BOMB_DAMAGE = Hearts.of(3);
+    public static final int BOMB_BLAST_RADIUS = 1;
+    public static final int BOMB_CHAIN_RADIUS = 2;
+
+    /** Super: hide a bomb on any empty square. */
+    private static final Attack BOMB = new BombDrop("bomb");
 
     private static final MovementPattern MOVEMENT = new KnightJump();
 
@@ -50,5 +60,10 @@ public final class Knight extends Hero {
     @Override
     public List<Attack> attacks() {
         return List.of(CHECK);
+    }
+
+    @Override
+    public Optional<Attack> superAttack() {
+        return Optional.of(BOMB);
     }
 }

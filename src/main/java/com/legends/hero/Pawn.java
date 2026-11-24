@@ -1,6 +1,7 @@
 package com.legends.hero;
 
 import com.legends.hero.attack.Attack;
+import com.legends.hero.attack.KnifeThrow;
 import com.legends.hero.attack.LineShot;
 import com.legends.hero.attack.QueenLines;
 import com.legends.hero.attack.RicochetChain;
@@ -8,15 +9,18 @@ import com.legends.hero.meter.NoSuperMeter;
 import com.legends.hero.movement.KingStep;
 import com.legends.hero.movement.MovementPattern;
 import com.legends.model.Direction;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The evolving hero. Starts as an Assassin with a Knife, becomes an Engineer after its
  * first hit, and a Queen after reaching the Keystone. It has no Super: evolution
  * replaces it. See docs/HEROES.md.
  *
- * <p>Its first hit evolves it to Engineer (see {@link #onHitDealt}). Reaching the
- * Keystone (a later version) evolves it to Queen through {@link #evolve()}.
+ * <p>Its first hit evolves it to Engineer (see {@link #onHitDealt}). Its one-per-game
+ * Knife throw leaves the Keystone on the board, and reaching the Keystone makes it a Queen
+ * (see {@link #becomeQueen()}).
  */
 public final class Pawn extends Hero {
 
@@ -34,7 +38,15 @@ public final class Pawn extends Hero {
     /** Queen: first piece on each of the 8 lines, up to 4 squares, 2 hearts each. */
     private static final Attack QUEEN_LINES = new QueenLines("queen-lines", 4, Hearts.of(2));
 
+    /** Knife throw: 1 heart, then 1 heart of poison at the start of each of the target's next 3 turns. */
+    public static final int THROW_DAMAGE = Hearts.of(1);
+    public static final int POISON_TURNS = 3;
+    public static final int POISON_DAMAGE = Hearts.of(1);
+
+    private static final Attack KNIFE_THROW = new KnifeThrow("knife-throw", THROW_DAMAGE, POISON_TURNS, POISON_DAMAGE);
+
     private PawnStage stage = PawnStage.ASSASSIN;
+    private boolean knifeThrown;
 
     public Pawn(Player owner) {
         super(owner, PawnStage.ASSASSIN.maxHalfHearts(), new NoSuperMeter());
@@ -55,6 +67,30 @@ public final class Pawn extends Hero {
         stage = next;
     }
 
+    /** Whether the Pawn still has its knife to throw. */
+    public boolean hasKnife() {
+        return !knifeThrown;
+    }
+
+    /**
+     * Marks the knife as thrown. It's gone for the rest of the game.
+     *
+     * @throws IllegalStateException if it was already thrown
+     */
+    public void throwKnife() {
+        if (knifeThrown) {
+            throw new IllegalStateException("The Pawn has already thrown its knife");
+        }
+        knifeThrown = true;
+    }
+
+    /** Evolves straight to the final stage, gaining the extra hearts of each stage on the way. */
+    public void becomeQueen() {
+        while (!stage.isFinal()) {
+            evolve();
+        }
+    }
+
     /** The Assassin's first hit evolves it to Engineer (docs/HEROES.md). */
     @Override
     protected void onHitDealt(int halfHearts) {
@@ -65,11 +101,22 @@ public final class Pawn extends Hero {
 
     @Override
     public List<Attack> attacks() {
-        return switch (stage) {
+        List<Attack> attacks = new ArrayList<>(switch (stage) {
             case ASSASSIN -> List.of(KNIFE);
             case ENGINEER -> List.of(RICOCHET);
             case QUEEN -> List.of(QUEEN_LINES);
-        };
+        });
+        // The throw is the only way to drop the Keystone, so it stays available until used.
+        if (hasKnife() && !stage.isFinal()) {
+            attacks.add(KNIFE_THROW);
+        }
+        return attacks;
+    }
+
+    /** The Pawn has no Super: evolving replaces it. */
+    @Override
+    public Optional<Attack> superAttack() {
+        return Optional.empty();
     }
 
     @Override

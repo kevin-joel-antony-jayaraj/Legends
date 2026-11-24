@@ -136,9 +136,13 @@ class AttackTest {
         assertTrue(new RicochetChain("ricochet", 6, 3, 2).options(at(5, 5), view).isEmpty());
     }
 
-    // ----- Knight's Check -----------------------------------------------------------
+    // ----- Knight's Check --------------------------------------------------------
 
     private static final KnightCheck CHECK = new KnightCheck("check", new int[] {2, 4, 6}, 6);
+
+    private static List<Effect> pushTo(Position from, Position to) {
+        return List.of(new Effect.Push(from, to));
+    }
 
     @Test
     void thereAreSixteenWaysToWalkAnL() {
@@ -146,54 +150,134 @@ class AttackTest {
     }
 
     @Test
-    void earlyStopHitsForOneHeartAndTheKnightStaysPut() {
+    void earlyStopLandsOnTheTargetAndKnocksItBack() {
         TestView view = new TestView(12).occupy(4, 5);
         List<AttackOption> options = CHECK.options(at(5, 5), view);
         assertEquals(1, options.size(), "the same early stop reached by several paths is listed once");
         AttackOption option = options.get(0);
-        assertEquals(at(5, 5), option.endsAt());
+        assertEquals(at(4, 5), option.endsAt(), "the Knight takes the target's square");
+        assertEquals(pushTo(at(4, 5), at(3, 5)), option.effects(), "knocked one square further, the way the Knight faces");
         assertEquals(Map.of(at(4, 5), 2), damageByTarget(option));
     }
 
     @Test
-    void middleStopHitsForTwoHeartsAndLandsJustBefore() {
+    void middleStopHitsForTwoHearts() {
         TestView view = new TestView(12).occupy(3, 5);
         AttackOption option = CHECK.options(at(5, 5), view).get(0);
-        assertEquals(at(4, 5), option.endsAt());
+        assertEquals(at(3, 5), option.endsAt());
+        assertEquals(pushTo(at(3, 5), at(2, 5)), option.effects());
         assertEquals(Map.of(at(3, 5), 4), damageByTarget(option));
     }
 
     @Test
-    void endStopHitsForThreeHeartsAndSplashesNeighbours() {
-        // Target at the end of the L (3,6); (2,6) and (3,7) stand next to it.
-        TestView view = new TestView(12).occupy(3, 6).occupy(2, 6).occupy(3, 7);
-        AttackOption viaStraight = CHECK.options(at(5, 5), view).stream()
-                .filter(o -> o.aim().equals(at(3, 6)) && o.endsAt().equals(at(3, 5)))
-                .findFirst().orElseThrow();
-        assertEquals(Map.of(at(3, 6), 6, at(2, 6), 6, at(3, 7), 6), damageByTarget(viaStraight));
-    }
-
-    @Test
-    void endOfTheLCanBeReachedTwoWays() {
+    void endOfTheLCanKnockTheTargetTwoWays() {
+        // Reach (3,6) by going up 2 then right 1 (facing east) or right 1 then up 2 (facing north).
         TestView view = new TestView(12).occupy(3, 6);
-        List<Position> landings = CHECK.options(at(5, 5), view).stream()
+        List<Position> knockedTo = CHECK.options(at(5, 5), view).stream()
                 .filter(o -> o.aim().equals(at(3, 6)))
-                .map(AttackOption::endsAt).toList();
-        assertEquals(List.of(at(3, 5), at(4, 6)), landings, "via the bend at (3,5) or the diagonal (4,6)");
+                .map(o -> o.firstPushDestination().orElseThrow()).toList();
+        assertEquals(List.of(at(3, 7), at(2, 6)), knockedTo);
     }
 
     @Test
-    void knightCantLandInARiver() {
-        TestView view = new TestView(12).occupy(3, 5).tile(4, 5, TileType.RIVER);
-        assertTrue(CHECK.options(at(5, 5), view).isEmpty(), "the only landing square is water");
+    void endStopSplashesEveryoneNextToTheTarget() {
+        TestView view = new TestView(12).occupy(3, 6).occupy(4, 7);
+        AttackOption option = CHECK.options(at(5, 5), view).stream()
+                .filter(o -> o.aim().equals(at(3, 6))).findFirst().orElseThrow();
+        assertEquals(Map.of(at(3, 6), 6, at(4, 7), 6), damageByTarget(option));
+    }
+
+    @Test
+    void blockedKnockbackLeavesTheTargetAndTheKnightStopsShort() {
+        // A wall behind the target: no knockback, so the Knight lands just before it.
+        TestView view = new TestView(12).occupy(3, 5).tile(2, 5, TileType.WALL);
+        AttackOption option = CHECK.options(at(5, 5), view).get(0);
+        assertEquals(at(4, 5), option.endsAt());
+        assertTrue(option.effects().isEmpty());
+    }
+
+    @Test
+    void earlyStopWithBlockedKnockbackKeepsTheKnightInPlace() {
+        TestView view = new TestView(12).occupy(4, 5).occupy(3, 5);
+        AttackOption early = CHECK.options(at(5, 5), view).stream()
+                .filter(o -> o.aim().equals(at(4, 5))).findFirst().orElseThrow();
+        assertEquals(at(5, 5), early.endsAt());
+    }
+
+    @Test
+    void noOptionWhenBothKnockbackAndLandingAreBlocked() {
+        TestView view = new TestView(12).occupy(3, 5).tile(2, 5, TileType.RIVER).tile(4, 5, TileType.RIVER);
+        assertTrue(CHECK.options(at(5, 5), view).isEmpty());
     }
 
     @Test
     void knightJumpsOverPiecesOnTheWay() {
-        // Path (4,5) -> (3,5) -> (3,6): the piece on (4,5) is jumped over, and the
-        // Knight lands on the free bend (3,5) to hit the end of the L.
-        TestView view = new TestView(12).occupy(4, 5).occupy(3, 6);
+        // The Knight jumps the piece on (4,5) to land on the middle stop (3,5).
+        TestView view = new TestView(12).occupy(4, 5).occupy(3, 5);
         assertTrue(CHECK.options(at(5, 5), view).stream()
-                .anyMatch(o -> o.aim().equals(at(3, 6)) && o.endsAt().equals(at(3, 5))));
+                .anyMatch(o -> o.aim().equals(at(3, 5)) && o.endsAt().equals(at(3, 5))));
+    }
+
+    // ----- Supers and the Knife throw -----------------------------------------------
+
+    @Test
+    void pushBackHitsAndPushesUpToThreeSquaresAway() {
+        TestView view = new TestView(12).occupy(5, 7);
+        AttackOption option = new PushBack("push", 4, 3, 2).options(at(5, 5), view).get(0);
+        assertEquals(Map.of(at(5, 7), 2), damageByTarget(option));
+        assertEquals(pushTo(at(5, 7), at(5, 10)), option.effects());
+    }
+
+    @Test
+    void pushBackStopsAtTheRiverEdgeAndAtOtherPieces() {
+        TestView river = new TestView(12).occupy(5, 7).tile(5, 9, TileType.RIVER);
+        assertEquals(pushTo(at(5, 7), at(5, 8)), new PushBack("push", 4, 3, 2).options(at(5, 5), river).get(0).effects());
+
+        TestView blocked = new TestView(12).occupy(5, 7).occupy(5, 8);
+        assertTrue(new PushBack("push", 4, 3, 2).options(at(5, 5), blocked).stream()
+                .filter(o -> o.aim().equals(at(5, 7))).findFirst().orElseThrow()
+                .effects().isEmpty(), "can't move, but still takes the hit");
+    }
+
+    @Test
+    void pullBringsTheFirstPieceOnEachLineNextToTheCastle() {
+        TestView view = new TestView(12).occupy(5, 9).occupy(1, 5).occupy(5, 1);
+        AttackOption option = new PullLines("pull").options(at(5, 5), view).get(0);
+        assertTrue(option.hits().isEmpty(), "no damage");
+        assertEquals(List.of(
+                new Effect.Push(at(1, 5), at(4, 5)),
+                new Effect.Push(at(5, 9), at(5, 6)),
+                new Effect.Push(at(5, 1), at(5, 4))), option.effects());
+    }
+
+    @Test
+    void pullStopsAtRiversAndIsBlockedByWalls() {
+        TestView view = new TestView(12)
+                .occupy(1, 5).tile(3, 5, TileType.RIVER)    // north: stops at the river's edge, (2,5)
+                .occupy(5, 9).tile(5, 7, TileType.WALL);    // east: wall in the way, no pull
+        AttackOption option = new PullLines("pull").options(at(5, 5), view).get(0);
+        assertEquals(List.of(new Effect.Push(at(1, 5), at(2, 5))), option.effects());
+    }
+
+    @Test
+    void pullWithNothingToMoveHasNoOption() {
+        TestView view = new TestView(12).occupy(5, 6);
+        assertTrue(new PullLines("pull").options(at(5, 5), view).isEmpty(), "already adjacent");
+    }
+
+    @Test
+    void bombCanGoOnAnyEmptyWalkableSquare() {
+        TestView view = new TestView(3).occupy(1, 1).tile(0, 0, TileType.RIVER);
+        List<Position> squares = aims(new BombDrop("bomb").options(at(1, 1), view));
+        assertEquals(7, squares.size(), "9 squares minus the Knight's own and the river");
+        assertTrue(!squares.contains(at(0, 0)) && !squares.contains(at(1, 1)));
+    }
+
+    @Test
+    void knifeThrowHitsAtAnyRangePoisonsAndDropsTheKeystone() {
+        TestView view = new TestView(12).occupy(0, 5);
+        AttackOption option = new KnifeThrow("throw", 2, 3, 2).options(at(11, 5), view).get(0);
+        assertEquals(Map.of(at(0, 5), 2), damageByTarget(option));
+        assertEquals(List.of(new Effect.Poison(at(0, 5), 3, 2), new Effect.DropKeystone(at(0, 5))), option.effects());
     }
 }
