@@ -27,7 +27,7 @@ public final class PushBack implements Attack {
     private final int halfHearts;
 
     /**
-     * @param radius     size of the square around the Archer: 3 means everything within 3 squares (7×7)
+     * @param radius     size of the square around the Archer: 2 means everything within 2 squares (5×5)
      * @param halfHearts damage to each piece caught in it
      */
     public PushBack(String id, int radius, int halfHearts) {

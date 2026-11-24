@@ -88,7 +88,7 @@ class SuperAndEffectsTest {
         List<GameEvent> events = engine.perform(new AttackAction(0, "push-back", at(5, 5)));
 
         assertEquals(new GameEvent.SuperUsed(0, "push-back"), events.get(0));
-        assertEquals(Optional.of(at(5, 9)), where(engine, 1), "pushed just outside the 7x7 square");
+        assertEquals(Optional.of(at(5, 8)), where(engine, 1), "pushed just outside the 5x5 square");
         assertEquals(Hearts.of(12 - 1), engine.game().heroInSeat(1).halfHearts());
         assertFalse(archer.isSuperReady(), "using the Super empties the meter, and its own hit doesn't refill it");
     }
@@ -155,10 +155,16 @@ class SuperAndEffectsTest {
     void onlyOneBombFitsOnASquare() {
         GameEngine engine = engine(List.of(at(1, 1), at(5, 5), at(10, 10), at(10, 1)), 1);
         engine.game().placeBomb(at(6, 6), 1);
-        chargeSuper(engine.game().heroInSeat(1));
-        assertTrue(engine.game().attackOptions(engine.game().heroInSeat(1)).stream()
-                .noneMatch(o -> o.attackId().equals("bomb") && o.aim().equals(at(6, 6))));
-        assertTrue(engine.check(new AttackAction(1, "bomb", at(6, 6))).isPresent());
+        Hero knight = engine.game().heroInSeat(1);
+        chargeSuper(knight);
+
+        // The square is still offered, so the list doesn't give the bomb away...
+        assertTrue(engine.game().attackOptions(knight).stream()
+                .anyMatch(o -> o.attackId().equals("bomb") && o.aim().equals(at(6, 6))));
+        // ...but choosing it is refused, and costs nothing.
+        assertEquals(Optional.of(AttackAction.BOMB_ALREADY_THERE), engine.check(new AttackAction(1, "bomb", at(6, 6))));
+        assertTrue(knight.isSuperReady());
+        assertEquals(1, engine.game().hiddenBombs().size());
     }
 
     @Test

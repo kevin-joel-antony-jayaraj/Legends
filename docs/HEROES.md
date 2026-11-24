@@ -7,7 +7,7 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
 - **Move:** 1 square in any direction (like a king).
 - **Normal attack, "Diagonal shot":** fires along a diagonal, up to 4 squares. Hits the first unit in its path. Damage: 2 hearts.
 - **Normal attack, "Melee":** 1 square, horizontal or vertical only. Damage: 2 hearts.
-- **Super, "Push Back":** a shockwave. Every enemy within 3 squares (a solid 7×7 square around the Archer) takes 1 heart and is pushed straight away from the Archer until it's out of the square. A push stops early at a wall, a unit, or the river's edge.
+- **Super, "Push Back":** a shockwave. Every enemy within 2 squares (a solid 5×5 square around the Archer) takes 1 heart and is pushed straight away from the Archer until it's out of the square. A push stops early at a wall, a unit, or the river's edge.
   - **Charge:** full after the Archer deals damage in 5 hits.
 
 ## Knight (tank)
@@ -24,7 +24,7 @@ Status: draft. Numbers marked **TBD** are not decided yet. See [RULES.md](RULES.
   - Explodes when an enemy steps on it, for 3 hearts to that enemy.
   - Each blast covers the 3×3 square around its bomb: 3 hearts to every enemy in it.
   - Chain reaction: any other bomb inside that 3×3 square also explodes, with its own 3×3 blast. Bombs outside it don't.
-  - Only one bomb per square. The Knight can tell where its bombs are; keeping that secret is the Knight player's job.
+  - Only one bomb per square. The Knight can't see its bombs either: it can pick a square that already has one, and gets the error "A bomb already exists on that square" (no action spent). If that leaks a bomb's position, that's the Knight player's problem.
   - The Knight takes no damage from its own bombs.
   - **Charge:** full after the Knight takes 6 hearts of damage. The meter charges from damage taken, but the bomb itself is still just a placement. Charging doesn't change what the bomb does.
 
