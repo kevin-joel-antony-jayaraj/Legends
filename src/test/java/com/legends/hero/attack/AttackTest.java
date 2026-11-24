@@ -122,19 +122,46 @@ class AttackTest {
 
     // ----- Ricochet chain -----------------------------------------------------------
 
+    /** Range 4, 2 hearts first, bounces reach 2 squares, up to 3 hits: the Engineer's real numbers. */
+    private static final RicochetChain RICOCHET = new RicochetChain("ricochet", 4, 4, 2, 3);
+
     @Test
-    void ricochetHitsTheTargetThenEveryoneNearIt() {
-        // Pawn at (5,5) hits (5,6). (5,8) is 2 from the target; (5,9) is 3 away.
-        TestView view = new TestView(12).occupy(5, 6).occupy(5, 8).occupy(5, 9);
-        List<AttackOption> options = new RicochetChain("ricochet", 6, 3, 2).options(at(5, 5), view);
-        assertEquals(1, options.size());
-        assertEquals(Map.of(at(5, 6), 6, at(5, 8), 3), damageByTarget(options.get(0)));
+    void ricochetShootsDownALineThenDoublesOnEveryBounce() {
+        // Pawn at (5,5) shoots east at (5,8), 3 squares away. Bounces: (3,8) is 2 from it,
+        // then (3,10) is 2 from that. (9,8) is on no line from the Pawn and too far to bounce to.
+        TestView view = new TestView(12).occupy(5, 8).occupy(3, 8).occupy(3, 10).occupy(9, 8);
+        List<AttackOption> options = RICOCHET.options(at(5, 5), view);
+        assertEquals(List.of(at(5, 8)), aims(options));
+        assertEquals(List.of(new Hit(at(5, 8), 4), new Hit(at(3, 8), 8), new Hit(at(3, 10), 16)),
+                options.get(0).hits(), "2, then 4, then 8 hearts");
     }
 
     @Test
-    void ricochetNeedsAnAdjacentTarget() {
-        TestView view = new TestView(12).occupy(5, 7);
-        assertTrue(new RicochetChain("ricochet", 6, 3, 2).options(at(5, 5), view).isEmpty());
+    void ricochetBouncesToTheNearestAndNeverBackToThePawn() {
+        // Target (5,6) is next to the Pawn. (5,8) and (5,7) are both in reach; (5,7) is nearer.
+        TestView view = new TestView(12).occupy(5, 6).occupy(5, 8).occupy(5, 7);
+        AttackOption shot = RICOCHET.options(at(5, 5), view).get(0);
+        assertEquals(List.of(at(5, 6), at(5, 7), at(5, 8)), shot.hits().stream().map(Hit::target).toList());
+    }
+
+    @Test
+    void ricochetStopsAfterThreeHits() {
+        TestView view = new TestView(12).occupy(5, 6).occupy(5, 7).occupy(5, 8).occupy(5, 9);
+        assertEquals(3, RICOCHET.options(at(5, 5), view).get(0).hits().size());
+    }
+
+    @Test
+    void ricochetIsBlockedLikeAnArrowButItsBouncesAreNot() {
+        TestView view = new TestView(12)
+                .occupy(5, 9)                                   // east: 4 squares, in range
+                .occupy(5, 1)                                   // west: 4 squares, in range...
+                .tile(5, 3, TileType.FOREST)                    // ...but forest is in the way
+                .occupy(0, 5);                                  // north: 5 squares, out of range
+        assertEquals(List.of(at(5, 9)), aims(RICOCHET.options(at(5, 5), view)));
+
+        // A wall between two enemies doesn't stop the bounce.
+        TestView walled = new TestView(12).occupy(5, 6).tile(5, 7, TileType.WALL).occupy(5, 8);
+        assertEquals(2, RICOCHET.options(at(5, 5), walled).get(0).hits().size());
     }
 
     // ----- Knight's Check --------------------------------------------------------

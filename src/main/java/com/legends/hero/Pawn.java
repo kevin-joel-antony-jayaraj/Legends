@@ -32,8 +32,16 @@ public final class Pawn extends Hero {
     private static final Attack KNIFE = LineShot.melee("knife", Direction.ALL, 2,
             distance -> distance == 1 ? Hearts.of(2) : Hearts.of(1));
 
-    /** Engineer: 3 hearts to an adjacent target, 1.5 hearts to everyone within 2 squares of it. */
-    private static final Attack RICOCHET = new RicochetChain("ricochet", Hearts.of(3), Hearts.of(1.5), 2);
+    /**
+     * Engineer: a shot along any line, up to 4 squares, that ricochets to the nearest enemy
+     * within 2 squares of the last one hit, doubling each time: 2, 4, then 8 hearts.
+     */
+    public static final int RICOCHET_RANGE = 4;
+    public static final int RICOCHET_FIRST_DAMAGE = Hearts.of(2);
+    public static final int RICOCHET_BOUNCE_RADIUS = 2;
+    public static final int RICOCHET_MAX_HITS = 3;
+    private static final Attack RICOCHET = new RicochetChain("ricochet",
+            RICOCHET_RANGE, RICOCHET_FIRST_DAMAGE, RICOCHET_BOUNCE_RADIUS, RICOCHET_MAX_HITS);
 
     /** Queen: first piece on each of the 8 lines, up to 4 squares, 2 hearts each. */
     private static final Attack QUEEN_LINES = new QueenLines("queen-lines", 4, Hearts.of(2));

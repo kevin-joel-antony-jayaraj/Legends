@@ -182,8 +182,8 @@ class GameEngineTest {
 
         List<GameEvent> events = engine.perform(new AttackAction(3, "ricochet", at(4, 5)));
 
-        assertEquals(Hearts.of(8 - 3), engine.game().heroInSeat(0).halfHearts(), "target takes 3");
-        assertEquals(Hearts.of(10 - 1.5), engine.game().heroInSeat(2).halfHearts(), "chain takes 1.5");
+        assertEquals(Hearts.of(8 - 2), engine.game().heroInSeat(0).halfHearts(), "first hit: 2");
+        assertEquals(Hearts.of(10 - 4), engine.game().heroInSeat(2).halfHearts(), "bounce doubles: 4");
         assertEquals(Hearts.of(12), engine.game().heroInSeat(1).halfHearts(), "the far Knight is untouched");
         assertEquals(2, eventsOf(events, GameEvent.HeroDamaged.class).size());
     }

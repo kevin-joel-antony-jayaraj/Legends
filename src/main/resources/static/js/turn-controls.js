@@ -129,9 +129,11 @@ export class TurnControls {
     }
     const name = attackName(mode.attackId);
     if (mode.kind === 'attack') {
-      return this.#onlyChoice(mode.attackId)
-        ? `${name}: click your hero, anyone it affects, or ${name} again to use it.`
-        : `Click an orange square to aim ${name}. Hover first to preview it.`;
+      const only = this.#onlyChoice(mode.attackId);
+      if (only && same(only.aim, this.#yourPosition())) {
+        return `${name}: click your hero, anyone it affects, or ${name} again to use it.`;
+      }
+      return `Click an orange square to aim ${name}. Hover first to preview it.`;
     }
     return distinguishingField(mode.choices) === 'landing'
       ? `${name} can end in more than one place: click where to land.`
